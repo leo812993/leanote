@@ -6,6 +6,7 @@ routes/
 /none
 /src
 pkg
+/bin
 bin2
 bin/i18n
 bin/leanote*
@@ -13,6 +14,7 @@ bin/release
 bin/test.sh
 bin/tmp
 bin/test
+/build
 public/upload
 app/routes/routes.go
 app/tmp/main.go

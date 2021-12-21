@@ -17245,6 +17245,19 @@
           else {
               $editorElt.val(initDocumentContent);
           }
+
+          aceEditor.getSession().on('change', function() {
+            content = getEditorContent(true)[0];
+            msg = '字符数：' + content.length + ' 字数：' + calcWords(content);
+            console.log(msg);
+            fmsg = '<div id="calcWords" tabindex="-1">' + msg + '</div>';
+            i = $('#wmd-button-bar').find('#calcWords');
+            if(i.length == 0) {
+                $('#wmd-button-bar').append(fmsg);
+            } else {
+                $(i[0]).html(msg).css({"float":"right", "padding-right": "10px"});
+            }
+          });
   
           // If the editor is already created
           if(editor !== undefined) {
