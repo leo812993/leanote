@@ -17248,7 +17248,8 @@
 
           aceEditor.getSession().on('change', function() {
             content = getEditorContent(true)[0];
-            msg = '字符数：' + content.length + ' 字数：' + calcWords(content);
+            // msg = '字符数：' + content.length + ' 字数：' + calcWords(content);
+            msg = '字数：' + calcWords(content);
             console.log(msg);
             fmsg = '<div id="calcWords" tabindex="-1">' + msg + '</div>';
             i = $('#wmd-button-bar').find('#calcWords');
