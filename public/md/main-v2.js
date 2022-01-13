@@ -7386,7 +7386,7 @@
           // Used to track when we're inside an ordered or unordered list
           // (see _ProcessListItems() for details):
           var g_list_level;
-  
+          this.pluginHooks = pluginHooks;
           this.makeHtml = function (text) {
   
               //
@@ -7459,6 +7459,31 @@
               g_html_blocks = g_titles = g_urls = null;
               return text;
           };
+          this.makeHtml2 = function(text) {
+            if (g_urls)
+                throw new Error("Recursive call to converter.makeHtml");
+            g_urls = new SaveHash();
+            g_titles = new SaveHash();
+            g_html_blocks = [];
+            g_list_level = 0;
+            text = pluginHooks.preConversion(text);
+              var markdownit = window.markdownit({
+                html: true,
+              })
+                .use(window.markdownitEmoji)
+                .use(window.markdownitKatex)
+                // .use(window.markdownitMermaid)
+                .use(window.markdownitPrismjs, {plugins: ['toolbar', 'line-numbers']})
+                .use(window.markdownitTaskLists )
+                .use(window.markdownitContainer, 'success')
+                .use(window.markdownitContainer, 'info')
+                .use(window.markdownitContainer, 'warning')
+                .use(window.markdownitContainer, 'danger');
+              text = markdownit.render(text)
+            text = pluginHooks.postConversion(text);
+            g_html_blocks = g_titles = g_urls = null;
+            return text;
+          }
   
           function _StripLinkDefinitions(text) {
               //
@@ -9661,7 +9686,7 @@
   
               return result;
           };
-  
+          
           var makePreviewHtml = function () {
   
               // If there is no registered preview panel
@@ -9680,7 +9705,7 @@
   
               var prevTime = new Date().getTime();
   
-              text = converter.makeHtml(text);
+              text = converter.makeHtml2(text);
   
               // Calculate the processing time of the HTML creation.
               // It's used as the delay time in the event listener.
@@ -9821,7 +9846,7 @@
                   panels.preview.scrollTop = 0;
               }
           };
-  
+          
           init();
       };
   
@@ -12329,6 +12354,7 @@
                   var sectionText = tmpText.substring(offset, endOffset);
                   sectionList.push({
                       text: sectionText,
+                    //   textWithDelimiter: sectionText + '\n' // 需要这个才能同步滚动
                       textWithDelimiter: '\n<div class="se-section-delimiter"></div>\n\n' + sectionText + '\n'
                   });
               }
@@ -12575,6 +12601,85 @@
   
       return partialRendering;
   });
+
+  define('extensions/prismJsToolbar', ['require', 'underscore', 'utils', 'classes/Extension',
+  ],function (require, _, utils, Extension) {
+    let prismPluginToolbar = new Extension("prismPluginToolbar", "prism Plugin Toolbar", true);
+    let previewContentsElt = document.getElementById('preview-contents');
+
+    function selectRange(elt) {
+        var selection;
+        // Source: http://stackoverflow.com/a/11128179/2757940
+        if (document.body.createTextRange) { // ms
+            selection = document.body.createTextRange();
+            selection.moveToElementText(elt);
+            selection.select();
+        } else if (window.getSelection) { // moz, opera, webkit
+            selection = window.getSelection();
+            var range = document.createRange();
+            range.selectNodeContents(elt);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+        return selection;
+    }
+
+    function registerSelectCodeButton () {
+        let toolbars = previewContentsElt.querySelectorAll('pre > .code-toolbar > .toolbar');
+        _.each(toolbars, function (t) {
+            let button = document.createElement('button'); // 一个节点不可能同时出现在文档的不同位置，每次都新建一个
+            button.innerHTML = 'Select Code';
+            button.addEventListener('click', function () {
+                selectRange(this.parentNode.parentNode.previousElementSibling);
+            });
+
+            let div = document.createElement('div');
+            div.classList.add('toolbar-item');
+            div.appendChild(button);
+            t.appendChild(div);
+        });
+    }
+
+    function registerCopyButton(){
+        let toolbars = previewContentsElt.querySelectorAll('pre > .code-toolbar > .toolbar');
+        _.each(toolbars, function (t) {
+            let button = document.createElement('button');
+            button.innerHTML = 'Copy';
+            button.addEventListener('click', function () {
+                if (nodeIsLocked(this)) { return; }
+                let selection = selectRange(this.parentNode.parentNode.previousElementSibling);
+                document.execCommand('Copy');
+                selection.empty();
+                button.innerHTML = 'Copied!';
+                lockNode(this);
+                setTimeout(() => {
+                    this.innerHTML = 'Copy';
+                    unlockNode(this);
+                    this.blur();
+                }, ATTR_TIMEOUT_VALUE);
+            });
+
+            let div = document.createElement('div');
+            div.classList.add('toolbar-item');
+            div.appendChild(button);
+            t.appendChild(div);
+        });
+    }
+
+    function onToggleMode(editor) {
+        if (typeof Prism === "undefined") throw new Error("Prism has not loaded yet.");
+        // if (typeof Prism.plugins.toolbar === "undefined") { return; }
+        editor.hooks.chain("onPreviewRefresh", function() {
+            registerCopyButton();
+        });
+    }
+
+    prismPluginToolbar.onPagedownConfigure = onToggleMode;
+    prismPluginToolbar.onToggleMode = onToggleMode;
+
+    return prismPluginToolbar;
+  });
+
   define('extensions/umlDiagrams',[
       'require',
       // "jquery",
@@ -12652,7 +12757,9 @@
       }
   
       function renderChart() {
-          var c = previewContentsElt.querySelectorAll('.prettyprint > .language-chart');
+        //   var c = previewContentsElt.querySelectorAll('.prettyprint > .language-chart');
+        //   var c = previewContentsElt.querySelectorAll('canvas.chartjs');
+        var c = previewContentsElt.querySelectorAll('pre.prettyprint.linenums.language-chart');
           if (!c || c.length == 0) {
               return;
           }
@@ -12660,12 +12767,14 @@
         //   require(['chart'], function (chart) {
               _.each(c, function(elt) {
                   try {
-                      var jsonObject = JSON.parse(elt.textContent);
-                      var preElt = elt.parentNode;
+                    //   var jsonObject = JSON.parse(elt.textContent);
+                    var jsonObject = JSON.parse($(elt).children().children()[0].textContent);
+                    //   var preElt = elt.parentNode;
                       var containerElt = crel('canvas', {
                           //class: 'flow-chart'
                       });
-                      preElt.parentNode.replaceChild(containerElt, preElt);
+                      elt.replaceWith(containerElt);
+                    //   preElt.parentNode.replaceChild(containerElt, preElt);
                       var ctx = containerElt.getContext('2d');
                       new Chart(ctx, jsonObject);
                   }
@@ -12677,7 +12786,8 @@
       }
   
       function renderMermaid() {
-          var mer = previewContentsElt.querySelectorAll('.prettyprint > .language-mermaid');
+        //   var mer = previewContentsElt.querySelectorAll('.prettyprint > .language-mermaid');
+        var mer = previewContentsElt.querySelectorAll('pre.prettyprint.linenums.language-mermaid');
           if (!mer || mer.length == 0) {
               return;
           }
@@ -12685,13 +12795,19 @@
           //loadJs('https://cdn.bootcss.com/mermaid/7.1.2/mermaid.js', function () {
               _.each(mer, function(elt) {
                   try {
-                      var text = elt.textContent;
-                      var preElt = elt.parentNode;
+                    //   var text = elt.textContent;
+                    // var text = $(elt).children().children()[0].textContent;
+                    let svgCode = "";
+                    $(elt).children().children("ol").children("li").each(function () {
+                            svgCode = svgCode + $(this).text() + "\n";
+                    });
+                    //   var preElt = elt.parentNode;
                       var containerElt = crel('div', {
                           class:'mermaid flow-chart',
                           style: 'max-width: 960px; margin:0 auto;'
-                      }, text);
-                      preElt.parentNode.replaceChild(containerElt, preElt);
+                      }, svgCode);
+                      elt.replaceWith(containerElt);
+                    //   preElt.parentNode.replaceChild(containerElt, preElt);
                       mermaid.init({noteMargin: 10}, ".mermaid");
                   }
                   catch(e) {
@@ -12705,7 +12821,7 @@
           editor.hooks.chain("onPreviewRefresh", function() {
               renderSequence();
               renderFlow();
-              renderMermaid();
+              renderMermaid(); // 交给markdownit插件实现
               renderChart();
           });
       }
@@ -12891,21 +13007,6 @@
   
       return emailConverter;
   });
-
-  define('extensions/emojiConverter',[
-    "classes/Extension",
-], function(Extension) {
-    var emojiConverter = new Extension("emojiConverter", "Markdown Emoji", true);
-    emojiConverter.onPagedownConfigure = function(editor) {
-        editor.getConverter().hooks.chain("postConversion", function(text) {
-            return text.replace(/:([-\w]+):/g, function(match, emoji) {
-                    return '<i class="em em-' + emoji + '"></i>';
-            });
-        });
-    };
-
-    return emojiConverter;
-});
 
   define('extensions/containerConverter',[
     "classes/Extension",
@@ -13928,16 +14029,16 @@
       // "extensions/documentManager",
       // "extensions/workingIndicator",
       // "extensions/notifications",
+      "extensions/prismJsToolbar",
       "extensions/umlDiagrams",
-      "extensions/markdownExtra",
+    //   "extensions/markdownExtra",
       "extensions/toc",
-      "extensions/mathJax",
-      "extensions/emailConverter",
-      "extensions/emojiConverter",
-      "extensions/containerConverter",
-      "extensions/todoList",
+    //   "extensions/mathJax",
+    //   "extensions/emailConverter",
+    //   "extensions/containerConverter",
+    //   "extensions/todoList",
       "extensions/scrollLink",
-      "extensions/htmlSanitizer",
+    //   "extensions/htmlSanitizer",
       // "extensions/buttonFocusMode",
       // "extensions/buttonSync",
       // "extensions/buttonPublish",
@@ -16865,6 +16966,7 @@
       "shortcutMgr",
       'pagedown-ace',
       'pagedown-light',
+    //   "markdownit-deps",
       // 'libs/ace_mode',
       // 'ace/requirejs/text!ace/css/editor.css',
       // 'ace/requirejs/text!ace/theme/textmate.css',
@@ -17250,7 +17352,6 @@
             content = getEditorContent(true)[0];
             // msg = '字符数：' + content.length + ' 字数：' + calcWords(content);
             msg = '字数：' + calcWords(content);
-            console.log(msg);
             fmsg = '<div id="calcWords" tabindex="-1">' + msg + '</div>';
             i = $('#wmd-button-bar').find('#calcWords');
             if(i.length == 0) {
@@ -17283,47 +17384,6 @@
           }
   
           var $previewContainerElt = $(".preview-container");
-  
-          /*
-          if(window.lightMode) {
-              // Store editor scrollTop on scroll event
-              $editorElt.scroll(function() {
-                  if(documentContent !== undefined) {
-                      fileDesc.editorScrollTop = $(this).scrollTop();
-                  }
-              });
-              // Store editor selection on change
-              $editorElt.bind("keyup mouseup", function() {
-                  if(documentContent !== undefined) {
-                      fileDesc.editorStart = this.selectionStart;
-                      fileDesc.editorEnd = this.selectionEnd;
-                  }
-              });
-          }
-          else {
-              // Store editor scrollTop on scroll event
-              var saveScroll = _.debounce(function() {
-                  if(documentContent !== undefined) {
-                      fileDesc.editorScrollTop = aceEditor.renderer.getScrollTop();
-                  }
-              }, 100);
-              aceEditor.session.on('changeScrollTop', saveScroll);
-              // Store editor selection on change
-              var saveSelection = _.debounce(function() {
-                  if(documentContent !== undefined) {
-                      fileDesc.editorSelectRange = aceEditor.getSelectionRange();
-                  }
-              }, 100);
-              aceEditor.session.selection.on('changeSelection', saveSelection);
-              aceEditor.session.selection.on('changeCursor', saveSelection);
-          }
-          // Store preview scrollTop on scroll event
-          $previewContainerElt.scroll(function() {
-              if(documentContent !== undefined) {
-                  fileDesc.previewScrollTop = $previewContainerElt.scrollTop();
-              }
-          });
-          */
   
           if(window.lightMode) {
               editor = new Markdown.EditorLight(converter);
@@ -17750,7 +17810,29 @@
           'ace/requirejs/text': 'libs/ace_text',
           'ace/commands/default_commands': 'libs/ace_commands',
           xregexp: 'bower-libs/xregexp/xregexp-all',
-         
+
+        //   markdownit: '//cdn.jsdelivr.net/npm/markdown-it@12.3.0/dist/markdown-it.min',
+        //   'markdownit-emoji': '//cdn.jsdelivr.net/npm/markdown-it-emoji@2.0.0/dist/markdown-it-emoji.min',
+        //   mermaid: '//cdn.jsdelivr.net/npm/mermaid@8.13.8/dist/mermaid.min',
+        //   'markdownit-mermaid': '/public/md/mermaid',
+        // //   mathjax: '//cdn.jsdelivr.net/npm/mathjax-full@3.2.0/es5/mathjax',
+        // //   mathjax_tex: '//cdn.jsdelivr.net/npm/mathjax-full@3.2.0/js/input/tex',
+        // //   mathjax_svg: '//cdn.jsdelivr.net/npm/mathjax-full@3.2.0/js/output/svg',
+        // //   mathjax_liteAdaptor: '//cdn.jsdelivr.net/npm/mathjax-full@3.2.0/js/adaptors/liteAdaptor',
+        // //   mathjax_html: 'https://cdn.jsdelivr.net/npm/mathjax-full@3.2.0/js/handlers/html',
+        // //   mathjax_AllPackages: '//cdn.jsdelivr.net/npm/mathjax-full@3.2.0/js/input/tex/AllPackages',
+        // //   juice_client: '//cdn.jsdelivr.net/npm/juice@8.0.0/client',
+        //   katex: '//cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min',
+        //   'markdownit-katex': '/public/md/katex',
+        //   'markdownit-container': '//cdn.jsdelivr.net/npm/markdown-it-container@3.0.0/dist/markdown-it-container.min',
+        //   'markdownit-todo': '//cdn.jsdelivr.net/npm/markdown-it-task-lists@2.1.1/dist/markdown-it-task-lists.min',
+        //   'prismjs/plugins': '/public/libs/prismjs/plugins', //'//cdn.jsdelivr.net/npm/prismjs@1/prism.min',
+        //   'prismjs/plugins/toolbar': '//cdn.jsdelivr.net/npm/prismjs@1/plugins/toolbar/prism-toolbar.min',
+        //   'prismjs/plugins/line-numbers': '//cdn.jsdelivr.net/npm/prismjs@1/plugins/line-numbers/prism-line-numbers.min',
+        //   'prismjs/plugins/autoloader': '//cdn.jsdelivr.net/npm/prismjs@1/plugins/autoloader/prism-autoloader.min',
+        // //   'prismjs/components/prism-c': '//cdn.jsdelivr.net/npm/prismjs@1.26.0/components/prism-c.min',
+        //   'markdownit-prismjs': '/public/md/prismjs',
+
           // 以下, 异步加载, 不常用
           Diagram: 'libs/uml/sequence-diagram.min',
           'diagram-grammar': 'libs/uml/diagram-grammar.min',
@@ -17762,6 +17844,19 @@
           underscore: {
               exports: '_'
           },
+        //   prismjs: {
+        //     exports: "Prism"
+        //   },
+        //   'markdownit-prismjs': ['prismjs/plugins/toolbar', 'prismjs/plugins/line-numbers', 'prismjs/plugins/autoloader'],
+        //   'markdownit-prismjs': function () {
+        //     let langs = ['c', 'clike', 'css', 'cmake', 'cpp', 'csv', 'ejs', 'csharp', 'go', 'java', 'json', 'json5', 'julia', 'latex', 'less', 'log', 'lua', 'markdown', 'matlab', 'mermaid', 'nginx', 'php', 'perl', 'qml', 'r', 'racket', 'regex', 'ruby', 'rust', 'scss', 'sql', 'stylus', 'verilog', 'vhdl', 'vim', 'yaml', 'bash', 'clojure']
+        //     return langs.map(function (e) {
+        //         return "prismjs/components/prism-" + e;
+        //     });
+        //   },
+        //   'prismjs/components/prism-c': ['prismjs'],
+        //   'markdownit-katex': ['katex'],
+        //   'markdownit-mermaid': {deps: ['mermaid'], exports: 'markdownitMermaid'},
           mathjax: [
               'libs/mathjax_init'
           ],
@@ -17830,11 +17925,43 @@
   window.theme = localStorage.themeV3 || 'default';
   var themeModule = "less!themes/default";
   
-  require(["core", "eventMgr"
+//   define('markdownit-deps', ['markdownit', 'markdownit-emoji', 'markdownit-mermaid', 'markdownit-katex', 'markdownit-container', 'markdownit-todo', 'markdownit-prismjs'], function() {});
+//   var markdownEmoji, markdownItMermaid, markdownItKatex, markdownitContainer, markdownTodo, markdownPrismjs;
+//   require(['markdownit-emoji'], (e) => {
+//     markdownEmoji = e;
+//   });
+//   require(['markdownit-mermaid'], (e) => {
+//     markdownItMermaid  = e;
+//   });
+//   require(['markdownit-katex'], (e) => {
+//     markdownItKatex  = e;
+//   });
+//   require(['markdownit-container'], (e) => {
+//     markdownitContainer  = e;
+//   });
+//   require(['markdownit-todo'], (e) => {
+//     markdownTodo  = e;
+//   });
+//   require(['markdownit-prismjs'], (e) => {
+//     markdownPrismjs  = e;
+//   });
+
+  require(["core", "eventMgr",
       // , themeModule
       ],
       function(core, eventMgr) {
-  
+        // window.markdownIt = m({
+        //     html: true,
+        // })
+        //   .use(markdownEmoji)
+        //   .use(markdownItMermaid)
+        //   .use(markdownItKatex)
+        //   .use(markdownTodo)
+        //   .use(markdownPrismjs)
+        //   .use(markdownitContainer, "success")
+        //   .use(markdownitContainer, "info")
+        //   .use(markdownitContainer, "danger")
+        //   .use(markdownitContainer, "warning");
       $(function() {
           core.onReady();
       });

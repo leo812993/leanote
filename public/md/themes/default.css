@@ -477,12 +477,12 @@ code.prettyprint, pre.prettyprint {
 
 code.prettyprint ol.linenums, pre.prettyprint ol.linenums {
     padding: 0 0 0 30px;
-    margin: 0
+    margin-bottom: 0px !important;
 }
 
 code.prettyprint ol.linenums li, pre.prettyprint ol.linenums li {
     color: #bebec5;
-    line-height: 20px
+    line-height: 20px;
 }
 
 #preview-contents pre ol li {
@@ -555,21 +555,29 @@ a code {
 }
 
 pre {
-    word-break: break-word
+    word-break: break-word;
+    border-radius: 5px;
+}
+
+pre code ol li {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+:not(pre)>code[class*=language-] {
+    background: transparent;
+}
+
+pre ol li span {
+    color: #333;
 }
 
 code, pre {
     font-family: Monaco, Menlo, 'Ubuntu Mono', Consolas, source-code-pro, Hiragino Sans GB, "Microsoft YaHei", "微软雅黑";
-    font-size: .9em
-}
-
-code {
+    font-size: .9em;
     white-space: normal
 }
 
-pre {
-    border-radius: 5px
-}
 
 pre.prettyprint {
     text-align: start;
@@ -581,6 +589,13 @@ pre.prettyprint code {
     background-color: transparent !important
 }
 
+/* Prism */
+
+.token.operator {
+    background: transparent;
+}
+
+/*  */
 .success,
 .info,
 .warning,

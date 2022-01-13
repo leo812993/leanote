@@ -10,17 +10,19 @@
 <meta name="description" content="Leanote, 蚂蚁笔记, {{msg $ "moto"}}">
 <title>Leanote, {{msg $ "moto"}}</title>
 
-<link href="/css/bootstrap-min.css" rel="stylesheet" />
+<link href="/libs/bootstrap/bootstrap-min.css" rel="stylesheet" />
 <!-- 先加载, 没有样式, 宽度不定 -->
 <link rel="stylesheet" href="/css/tinymce/skin.min.css" rel="stylesheet"/>
 <!-- leanote css -->
-<link href="/css/font-awesome-4.2.0/css/font-awesome-min.css" rel="stylesheet" />
+<link href="/fonts/font-awesome-4.2.0/css/font-awesome-min.css" rel="stylesheet" />
 <link href="/css/zTreeStyle/zTreeStyle-min.css" rel="stylesheet" />
 <!-- mdeditor -->
+<link rel="stylesheet" href="/libs/katex/katex.min.css">
+<link rel="stylesheet" href="/libs/prismjs/prism.min.css">
+<link rel="stylesheet" href="/libs/prismjs/plugins/toolbar/prism-toolbar.min.css">
 <link href="/public/md/themes/default.css" rel="stylesheet" />
 <!-- context-menu -->
 <link rel="stylesheet" href="/js/contextmenu/css/contextmenu-min.css?id=1" type="text/css" />
-<link href="https://afeld.github.io/emoji-css/emoji.css" rel="stylesheet">
 
 <script>
 var hash = location.hash;
@@ -892,21 +894,20 @@ var GlobalConfigs = {{.globalConfigs|jsonJs}};
 <!-- pro_dep_js -->
 
 <!-- dev -->
-<script src="/js/jquery-1.9.0.min.js"></script>
-<script src="/js/jquery.ztree.all-3.5.js"></script>
+<script src="/libs/jquery/jquery-1.9.0.min.js"></script>
+<script src="/libs/jquery/jquery.ztree.all-3.5.js"></script>
 <script src="/js/object_id.js"></script>
 <!-- /dev -->
 
 <script src="/tinymce/tinymce.js"></script>
 
-<script src="/public/libs/ace/ace.js"></script>
+<script src="/libs/ace/ace.js"></script>
 
 <!-- dev -->
-<script src="/js/jQuery-slimScroll-1.3.0/jquery.slimscroll.js"></script>
+<script src="/libs/jquery/jQuery-slimScroll-1.3.0/jquery.slimscroll.js"></script>
+<script src="/libs/bootstrap/bootstrap-min.js"></script>
 <script src="/js/contextmenu/jquery.contextmenu.js"></script>
 <script src="/js/common.js"></script>
-<script src="/js/common-lite.js"></script>
-<script src="/js/bootstrap-min.js"></script>
 <script src="/js/app/note.js"></script>
 <script src="/js/app/tag.js"></script>
 <script src="/js/app/notebook.js"></script>
@@ -915,8 +916,6 @@ var GlobalConfigs = {{.globalConfigs|jsonJs}};
 <!-- /dev -->
 
 <!-- pro_app_js -->
-<script src="https://cdn.bootcdn.net/ajax/libs/mermaid/8.11.2/mermaid.min.js"></script>
-<script src="https://cdn.bootcdn.net/ajax/libs/Chart.js/3.5.0/chart.min.js"></script>
 <script>
 initPage();
 // 当tinymce.dev.js时, 请注释require
@@ -925,10 +924,29 @@ window.require = {
 };
 </script>
 
+<!-- markdown_it_js -->
+<script src="/libs/chart.min.js"></script>
+<script src="/libs/mermaid.min.js"></script>
+<script src="/libs/markdown-it/markdown-it.min.js"></script>
+<script src="/libs/markdown-it/plugins/markdown-it-emoji.min.js"></script>
+<script src="/libs/katex/katex.min.js"></script>
+<script src="/libs/markdown-it/plugins/katex.js"></script>
+<script src="/libs/markdown-it/plugins/mermaid.js"></script>
+<script src="/libs/markdown-it/plugins/markdown-it-container.min.js"></script>
+<script src="/libs/markdown-it/plugins/markdown-it-task-lists.min.js"></script>
+<!-- <script src="/libs/clipboard.min.js"></script> -->
+<script src="/libs/prismjs/prism.min.js"></script>
+<script src="/libs/prismjs/components.js"></script>
+<!-- <script src="/libs/prismjs/plugins/toolbar/prism-toolbar.min.js"></script> -->
+<!-- <script src="/libs/prismjs/plugins/copy-to-clipboard/prism-copy-to-clipboard.min.js"></script> -->
+<script src="/libs/markdown-it/plugins/prismjs.js"></script>
+<!-- /markdown_it_js -->
+
 <!-- pro_markdown_js -->
 
 <!-- dev -->
 <script src="/js/require.js"></script>
+<!-- <script src="https://cdn.jsdelivr.net/npm/requirejs@2.3.6/require.js"></script> -->
 <script src="/public/md/main-v2.js"></script>
 <!-- /dev -->
 

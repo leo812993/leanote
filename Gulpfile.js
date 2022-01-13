@@ -21,13 +21,13 @@ var messagesPath = leanoteBase + 'messages';
 // 840kb, 非常耗时!!
 gulp.task('concatDepJs', function() {
     var jss = [
-        'js/jquery-1.9.0.min.js',
-        'js/jquery.ztree.all-3.5-min.js',
+        'libs/jquery/jquery-1.9.0.min.js',
+        'libs/jquery/jquery.ztree.all-3.5-min.js',
         // 'tinymce/tinymce.full.min.js', // 使用打成的包, 加载速度快
         // 'libs/ace/ace.js',
-        'js/jQuery-slimScroll-1.3.0/jquery.slimscroll-min.js',
+        'libs/jquery/jQuery-slimScroll-1.3.0/jquery.slimscroll-min.js',
         'js/contextmenu/jquery.contextmenu-min.js',
-        'js/bootstrap-min.js',
+        'libs/bootstrap/bootstrap-min.js',
         'js/object_id.js',
     ];
 
@@ -39,6 +39,34 @@ gulp.task('concatDepJs', function() {
         .src(jss)
         // .pipe(uglify()) // 压缩
         .pipe(concat('dep.min.js'))
+        .pipe(gulp.dest(base + '/js'));
+});
+
+// 合并app js 这些js会经常变化 90kb
+gulp.task('concatMarkdownItJs', function() {
+    var jss = [
+        'libs/prismjs/prism.min.js',
+        'libs/prismjs/components.js',
+        'libs/katex/katex.min.js',
+        'libs/chart.min.js',
+        'libs/mermaid.min.js',
+        'libs/markdown-it/markdown-it.min.js',
+        'libs/markdown-it/plugins/markdown-it-emoji.min.js',
+        'libs/markdown-it/plugins/katex.js', // 这个依赖katex
+        'libs/markdown-it/plugins/mermaid.js', // 这个依赖mermaid
+        'libs/markdown-it/plugins/markdown-it-container.min.js',
+        'libs/markdown-it/plugins/markdown-it-task-lists.min.js',
+        'libs/markdown-it/plugins/prismjs.js' // 这个依赖 prismjs
+    ];
+
+    for(var i in jss) {
+        jss[i] = base + '/' + jss[i];
+    }
+
+    return gulp
+        .src(jss)
+        .pipe(uglify()) // 压缩
+        .pipe(concat('markdownit.min.js'))
         .pipe(gulp.dest(base + '/js'));
 });
 
@@ -310,10 +338,10 @@ gulp.task('concatAlbumJs', function() {
         .pipe(gulp.dest(base + '/album/css'));
 
     var jss = [
-        'js/jquery-1.9.0.min.js',
-        'js/bootstrap-min.js',
+        'libs/jquery/jquery-1.9.0.min.js',
+        'libs/bootstrap/bootstrap-min.js',
         'js/plugins/libs-min/fileupload.js',
-        'js/jquery.pagination.js',
+        'libs/jquery/jquery.pagination.js',
         'album/js/main.js',
     ];
 
@@ -366,15 +394,15 @@ gulp.task('concatCss', function() {
 // mincss
 var minifycss = require('gulp-minify-css');
 gulp.task('minifycss', function() {
-    gulp.src(base + '/css/bootstrap.css')
+    gulp.src(base + '/libs/bootstrap/bootstrap.css')
         .pipe(rename({suffix: '-min'}))
         .pipe(minifycss())
-        .pipe(gulp.dest(base + '/css'));
+        .pipe(gulp.dest(base + '/libs/bootstrap'));
 
-    gulp.src(base + '/css/font-awesome-4.2.0/css/font-awesome.css')
+    gulp.src(base + '/fonts/font-awesome-4.2.0/css/font-awesome.css')
         .pipe(rename({suffix: '-min'}))
         .pipe(minifycss())
-        .pipe(gulp.dest(base + '/css/font-awesome-4.2.0/css'));
+        .pipe(gulp.dest(base + '/fonts/font-awesome-4.2.0/css'));
 
     gulp.src(base + '/css/zTreeStyle/zTreeStyle.css')
         .pipe(rename({suffix: '-min'}))
@@ -404,6 +432,6 @@ gulp.task('minifycss', function() {
 });
 
 
-gulp.task('concat', ['concatDepJs', 'concatAppJs', /* 'concatMarkdownJs', */'concatMarkdownJsV2']);
+gulp.task('concat', ['concatDepJs', 'concatMarkdownItJs', 'concatAppJs', /* 'concatMarkdownJs', */'concatMarkdownJsV2']);
 gulp.task('html', ['devToProHtml']);
 gulp.task('default', ['concat', 'plugins', 'minifycss', 'i18n', 'concatAlbumJs', 'html']);

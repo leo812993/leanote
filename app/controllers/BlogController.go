@@ -176,20 +176,20 @@ func (c Blog) setUrl(userBlog info.UserBlog, userInfo info.User) {
 	c.ViewArgs["themeBaseUrl"] = "/" + userBlog.ThemePath
 
 	// 其它static js
-	c.ViewArgs["jQueryUrl"] = "/js/jquery-1.9.0.min.js"
+	c.ViewArgs["jQueryUrl"] = "/public/libs/jquery/jquery-1.9.0.min.js"
 
-	c.ViewArgs["prettifyJsUrl"] = "/js/google-code-prettify/prettify.js"
-	c.ViewArgs["prettifyCssUrl"] = "/js/google-code-prettify/prettify.css"
+	c.ViewArgs["prettifyJsUrl"] = "/public/libs/google-code-prettify/prettify.js"
+	c.ViewArgs["prettifyCssUrl"] = "/public/libs/google-code-prettify/prettify.css"
 
 	c.ViewArgs["blogCommonJsUrl"] = "/public/blog/js/common.js"
 
 	c.ViewArgs["shareCommentCssUrl"] = "/public/blog/css/share_comment.css"
 	c.ViewArgs["shareCommentJsUrl"] = "/public/blog/js/share_comment.js"
 
-	c.ViewArgs["fontAwesomeUrl"] = "/css/font-awesome-4.2.0/css/font-awesome.css"
+	c.ViewArgs["fontAwesomeUrl"] = "/public/libs/font-awesome-4.2.0/css/font-awesome.css"
 
-	c.ViewArgs["bootstrapCssUrl"] = "/css/bootstrap.css"
-	c.ViewArgs["bootstrapJsUrl"] = "/js/bootstrap-min.js"
+	c.ViewArgs["bootstrapCssUrl"] = "/public/libs/bootstrap/bootstrap.css"
+	c.ViewArgs["bootstrapJsUrl"] = "/public/libs/bootstrap/bootstrap-min.js"
 }
 
 // 笔记本分类 只列出两级 Notebook

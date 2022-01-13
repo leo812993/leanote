@@ -33,8 +33,8 @@ code.prettyprint .linenums,pre.prettyprint .linenums {
 }
 
 code.prettyprint ol.linenums,pre.prettyprint ol.linenums {
-	padding: 0 0 0 40px;
-	margin: 0;
+	padding: 0 0 0 40px; /* padding: 0 0 0 30px; */
+	margin-bottom: 0px !important;
 }
 
 code.prettyprint ol.linenums li,pre.prettyprint ol.linenums li {
