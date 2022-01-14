@@ -57,7 +57,7 @@ func (this *FileService) ListImagesWithPage(userId, albumId, key string, pageNum
 
 	db.Files.
 		Find(q).
-		Sort(sortFieldR).
+		Sort(sortFieldR...).
 		Skip(skipNum).
 		Limit(pageSize).
 		All(&files)

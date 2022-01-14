@@ -443,7 +443,7 @@ func (this *UserService) ListUsers(pageNumber, pageSize int, sortField string, i
 	// 总记录数
 	count, _ := q.Count()
 	// 列表
-	q.Sort(sortFieldR).
+	q.Sort(sortFieldR...).
 		Skip(skipNum).
 		Limit(pageSize).
 		All(&users)

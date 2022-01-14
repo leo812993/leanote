@@ -305,7 +305,7 @@ func (this *BlogService) SearchBlogByTags(tags []string, userId string, sortFiel
 	count, _ := q.Count()
 	if count == 0 { return }
 
-	q.Sort(sortFieldR).
+	q.Sort(sortFieldR...).
 		All(&notes)
 
 	blogs = this.notes2BlogItems(notes)
@@ -330,7 +330,7 @@ func (this *BlogService) SearchBlogByCate(notebookId, userId, sortField string, 
 	count, _ := q.Count()
 	if count == 0 { return }
 	
-	q.Sort(sortFieldR).All(&notes)
+	q.Sort(sortFieldR...).All(&notes)
 
 	blogs = this.notes2BlogItems(notes)
 	return
@@ -383,10 +383,10 @@ func (this *BlogService) SearchBlog(key, userId string, page, pageSize int, sort
 func (this *BlogService) PreNextBlog(userId string, sorterField string, isAsc bool, noteId string, baseTime interface{}) (info.Post, info.Post) {
 	userIdO := bson.ObjectIdHex(userId)
 
+	// sorterField = "-IsTop;"+sorterField // 置顶始终按降序排 top 目前在basetime下取不出来，可使用pipe实现
 	var sortFieldT1, sortFieldT2 bson.M
-	var sortFieldR1, sortFieldR2 string
-	if !isAsc {
-		// 降序
+	var sortFieldR1, sortFieldR2 []string
+	if !isAsc { // 降序
 		/*
 			------- pre
 			----- now
@@ -395,12 +395,11 @@ func (this *BlogService) PreNextBlog(userId string, sorterField string, isAsc bo
 		*/
 		// 上一篇时间要比它大, 找最小的
 		sortFieldT1 = bson.M{"$gte": baseTime} // 为什么要相等, 因为将notebook发布成博客, 会统一修改note的publicTime, 此时所有notes都一样
-		sortFieldR1 = sorterField
+		sortFieldR1 = parseSort(sorterField, true)
 		// 下一篇时间要比它小
 		sortFieldT2 = bson.M{"$lte": baseTime}
-		sortFieldR2 = "-" + sorterField
-	} else {
-		// 升序
+		sortFieldR2 = parseSort(sorterField, false) // false 降序
+	} else { // 升序
 		/*
 		   --- pre
 		   ----- now
@@ -409,10 +408,10 @@ func (this *BlogService) PreNextBlog(userId string, sorterField string, isAsc bo
 		*/
 		// 上一篇要比它小, 找最大的
 		sortFieldT1 = bson.M{"$lte": baseTime}
-		sortFieldR1 = "-" + sorterField
+		sortFieldR1 = parseSort(sorterField, false)
 		// 下一篇, 找最小的
 		sortFieldT2 = bson.M{"$gte": baseTime}
-		sortFieldR2 = sorterField
+		sortFieldR2 = parseSort(sorterField, true)
 	}
 
 	// 1
@@ -425,8 +424,14 @@ func (this *BlogService) PreNextBlog(userId string, sorterField string, isAsc bo
 		"_id":       bson.M{"$ne": bson.ObjectIdHex(noteId)},
 		sorterField: sortFieldT1,
 	}
+	// pipe := []bson.M{
+	// 	{"$sort": bson.M{"IsTop": 1, sorterField: 1}},
+	// 	{"$match": query},
+	// 	{"$limit": 1},
+	// }
+	// db.Notes.Pipe(pipe).One(&note)
 	q := db.Notes.Find(query)
-	q.Sort(sortFieldR1).Limit(1).One(&note)
+	q.Sort(sortFieldR1...).Limit(1).One(&note)
 
 	// 下一篇, 比基时间要大, 但是是第一篇, 所以是升序
 	if note.NoteId != "" {
@@ -437,8 +442,14 @@ func (this *BlogService) PreNextBlog(userId string, sorterField string, isAsc bo
 	//	Log(isAsc)
 	//	LogJ(query)
 	//	Log(sortFieldR2)
+	// pipe = []bson.M{
+	// 	{"$sort": bson.M{"IsTop": 1, sorterField: -1}},
+	// 	{"$match": query},
+	// 	{"$limit": 1},
+	// }
+	// db.Notes.Pipe(pipe).One(&note)
 	q = db.Notes.Find(query)
-	q.Sort(sortFieldR2).Limit(1).One(&note2)
+	q.Sort(sortFieldR2...).Limit(1).One(&note2)
 
 	return this.FixNote(note), this.FixNote(note2)
 }
@@ -478,7 +489,7 @@ func (this *BlogService) ListAllBlogs(userId, tag string, keywords string, isRec
 	// 总记录数
 	count, _ := q.Count()
 
-	q.Sort(sortFieldR).
+	q.Sort(sortFieldR...).
 		Skip(skipNum).
 		Limit(pageSize).
 		All(&notes)
@@ -635,9 +646,9 @@ func (this *BlogService) ListLikedUsers(noteId string, isAll bool) ([]info.UserA
 	}
 
 	if isAll {
-		q.Sort(sortFieldR).Skip(skipNum).Limit(pageSize).All(&likes)
+		q.Sort(sortFieldR...).Skip(skipNum).Limit(pageSize).All(&likes)
 	} else {
-		q.Sort(sortFieldR).All(&likes)
+		q.Sort(sortFieldR...).All(&likes)
 	}
 
 	// 得到所有userIds
@@ -861,7 +872,7 @@ func (this *BlogService) ListComments(userId, noteId string, page, pageSize int)
 
 	// 总记录数
 	count, _ := q.Count()
-	q.Sort(sortFieldR).Skip(skipNum).Limit(pageSize).All(&comments2)
+	q.Sort(sortFieldR...).Skip(skipNum).Limit(pageSize).All(&comments2)
 
 	if len(comments2) == 0 {
 		return pageInfo, nil, nil

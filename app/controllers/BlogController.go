@@ -366,9 +366,9 @@ func (c Blog) blogCommon(userId string, userBlog info.UserBlog, userInfo info.Us
 	//	c.ViewArgs["userInfo"] = userInfo
 
 	// 最新笔记
-	_, recentBlogs := blogService.ListBlogs(userId, "", 1, 5, userBlog.SortField, userBlog.IsAsc)
+	_, recentBlogs := blogService.ListBlogs(userId, "", 1, 5, "UpdatedTime", false) // 固定成更新时间，降序
 	c.ViewArgs["recentPosts"] = blogService.FixBlogs(recentBlogs)
-	c.ViewArgs["latestPosts"] = c.ViewArgs["recentPosts"]
+	// c.ViewArgs["latestPosts"] = c.ViewArgs["recentPosts"]
 	c.ViewArgs["tags"] = blogService.GetBlogTags(userId)
 
 	// 语言, url地址
@@ -660,7 +660,7 @@ func (c Blog) Index(userIdOrEmail string) (re revel.Result) {
 
 	// 分页的话, 需要分页信息, totalPage, curPage
 	page := c.GetPage()
-	pageInfo, blogs := blogService.ListBlogs(userId, "", page, userBlog.PerPageSize, userBlog.SortField, userBlog.IsAsc)
+	pageInfo, blogs := blogService.ListBlogs(userId, "", page, userBlog.PerPageSize, "-IsTop;"+userBlog.SortField, userBlog.IsAsc)
 	blogs2 := blogService.FixBlogs(blogs)
 	c.ViewArgs["posts"] = blogs2
 

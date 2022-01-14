@@ -536,7 +536,7 @@ func (this *EmailService) ListEmailLogs(pageNumber, pageSize int, sortField stri
 	// 总记录数
 	count, _ := q.Count()
 	// 列表
-	q.Sort(sortFieldR).
+	q.Sort(sortFieldR...).
 		Skip(skipNum).
 		Limit(pageSize).
 		All(&emailLogs)

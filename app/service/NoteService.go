@@ -198,15 +198,12 @@ func (this *NoteService) ListNotes(userId, notebookId string,
 	isTrash bool, pageNumber, pageSize int, sortField string, isAsc bool, isBlog bool) (count int, notes []info.Note) {
 	notes = []info.Note{}
 	skipNum, sortFieldR := parsePageAndSort(pageNumber, pageSize, sortField, isAsc)
-	sortFieldList := []string{}
 
 	// 不是trash的
 	query := bson.M{"UserId": bson.ObjectIdHex(userId), "IsTrash": isTrash, "IsDeleted": false}
 	if isBlog {
 		query["IsBlog"] = true
-		sortFieldList = append(sortFieldList, "-IsTop")
 	}
-	sortFieldList = append(sortFieldList, sortFieldR)
 	
 	if notebookId != "" {
 		query["NotebookId"] = bson.ObjectIdHex(notebookId)
@@ -217,7 +214,7 @@ func (this *NoteService) ListNotes(userId, notebookId string,
 	// 总记录数
 	count, _ = q.Count()
 
-	q.Sort(sortFieldList...).
+	q.Sort(sortFieldR...).
 		Skip(skipNum).
 		Limit(pageSize).
 		All(&notes)
@@ -234,7 +231,7 @@ func (this *NoteService) ListNotesByNoteIdsWithPageSort(noteIds []bson.ObjectId,
 	// 不是trash
 	db.Notes.
 		Find(bson.M{"_id": bson.M{"$in": noteIds}, "IsTrash": false}).
-		Sort(sortFieldR).
+		Sort(sortFieldR...).
 		Skip(skipNum).
 		Limit(pageSize).
 		All(&notes)
@@ -853,7 +850,7 @@ func (this *NoteService) SearchNote(key, userId string, pageNumber, pageSize int
 	// 总记录数
 	count, _ = q.Count()
 
-	q.Sort(sortFieldR).
+	q.Sort(sortFieldR...).
 		Skip(skipNum).
 		Limit(pageSize).
 		All(&notes)
@@ -866,7 +863,7 @@ func (this *NoteService) SearchNote(key, userId string, pageNumber, pageSize int
 }
 
 // 搜索noteContents, 补集pageSize个
-func (this *NoteService) searchNoteFromContent(notes []info.Note, userId, key string, pageSize int, sortField string, isBlog bool) []info.Note {
+func (this *NoteService) searchNoteFromContent(notes []info.Note, userId, key string, pageSize int, sortField []string, isBlog bool) []info.Note {
 	var remain = pageSize - len(notes)
 	noteIds := make([]bson.ObjectId, len(notes))
 	for i, note := range notes {
@@ -883,7 +880,7 @@ func (this *NoteService) searchNoteFromContent(notes []info.Note, userId, key st
 	}
 	db.NoteContents.
 		Find(query).
-		Sort(sortField).
+		Sort(sortField...).
 		Limit(remain).
 		Select(bson.M{"_id": true}).
 		All(&noteContents)
@@ -928,7 +925,7 @@ func (this *NoteService) SearchNoteByTags(tags []string, userId string, pageNumb
 	// 总记录数
 	count, _ = q.Count()
 
-	q.Sort(sortFieldR).
+	q.Sort(sortFieldR...).
 		Skip(skipNum).
 		Limit(pageSize).
 		All(&notes)
