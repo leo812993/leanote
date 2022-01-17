@@ -7466,12 +7466,12 @@
             g_titles = new SaveHash();
             g_html_blocks = [];
             g_list_level = 0;
-            text = pluginHooks.preConversion(text);
               var markdownit = window.markdownit({
                 html: true,
               })
                 .use(window.markdownitEmoji)
                 .use(window.markdownitKatex)
+                // .use(window.markdownitHeading)
                 // .use(window.markdownitMermaid)
                 .use(window.markdownitPrismjs, {plugins: ['toolbar', 'line-numbers']})
                 .use(window.markdownitTaskLists )
@@ -7479,7 +7479,8 @@
                 .use(window.markdownitContainer, 'info')
                 .use(window.markdownitContainer, 'warning')
                 .use(window.markdownitContainer, 'danger');
-              text = markdownit.render(text)
+            text = pluginHooks.preConversion(text);
+            text = markdownit.render(text);
             text = pluginHooks.postConversion(text);
             g_html_blocks = g_titles = g_urls = null;
             return text;
@@ -12342,6 +12343,7 @@
               regexp = '^[ \\t]*\\n\\\\\\\\[[\\s\\S]*?\\\\\\\\]|' + regexp; // \\[ \\] math block delimiters
               regexp = '^[ \\t]*\\n\\\\?\\\\begin\\{[a-z]*\\*?\\}[\\s\\S]*?\\\\end\\{[a-z]*\\*?\\}|' + regexp; // \\begin{...} \\end{...} math block delimiters
           }
+          regexp = '^```.*\\n[\\s\\S]*?\\n```|' + regexp;
           regexp = new RegExp(regexp, 'gm');
           
           var converter = editor.getConverter();
@@ -12351,10 +12353,9 @@
               eventMgr.previewStartTime = new Date();
               var tmpText = text + "\n\n";
               function addSection(startOffset, endOffset) {
-                  var sectionText = tmpText.substring(offset, endOffset);
+                  var sectionText = tmpText.substring(startOffset, endOffset);
                   sectionList.push({
                       text: sectionText,
-                    //   textWithDelimiter: sectionText + '\n' // 需要这个才能同步滚动
                       textWithDelimiter: '\n<div class="se-section-delimiter"></div>\n\n' + sectionText + '\n'
                   });
               }

@@ -94,6 +94,7 @@ function checkLanguageOption(options, optionName) {
       langToUse = options.defaultLanguageForUnspecified;
       return [langToUse, undefined];
     }
+    if (langToUse === 'cpp') {loadPrismLang('c');} // cpp dependency c
     let prismLang = loadPrismLang(langToUse);
     // if (prismLang === undefined && options.defaultLanguageForUnknown !== undefined ) {
     //   langToUse = options.defaultLanguageForUnknown;
