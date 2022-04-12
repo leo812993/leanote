@@ -79,6 +79,12 @@ func (c Preview) Cates(userIdOrEmail string) revel.Result {
 	}
 	return c.Blog.Cates(c.GetUserId())
 }
+func (c Preview) RSS(userIdOrEmail string) revel.Result {
+	if !c.getPreviewThemeAbsolutePath("") {
+		return c.E404()
+	}
+	return c.Blog.RSS(c.GetUserId())
+}
 func (c Preview) Cate(userIdOrEmail, notebookId string) revel.Result {
 	if !c.getPreviewThemeAbsolutePath("") {
 		return c.E404()

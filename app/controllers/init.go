@@ -17,6 +17,7 @@ var noteContentHistoryService *service.NoteContentHistoryService
 var authService *service.AuthService
 var shareService *service.ShareService
 var blogService *service.BlogService
+var staticBlogService *service.StaticBlogService
 var tagService *service.TagService
 var pwdService *service.PwdService
 var tokenService *service.TokenService
@@ -120,6 +121,7 @@ func InitService() {
 	userService = service.UserS
 	tagService = service.TagS
 	blogService = service.BlogS
+	staticBlogService = service.StaticBlogS
 	tokenService = service.TokenS
 	noteImageService = service.NoteImageS
 	fileService = service.FileS

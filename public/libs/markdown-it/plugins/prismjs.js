@@ -13,15 +13,11 @@ function loadJS(file) {
 }
 
 function langAliasPreProcess(lang) {
-  if (lang === "py") {
-    return "python";
-  }
-  if (lang === "js") {
-    return "javascript";
-  }
-  if (lang === "sh") {
-    return "bash";
-  }
+  if (lang === "py") { return "python"; }
+  if (lang === "js") { return "javascript"; }
+  if (lang === "sh") { return "bash"; }
+  if (lang === "html") { return "markup"; }
+  if ((lang === "mma") || (lang === "mathematica")) { return "wolfram"; }
   return lang;
 }
 
@@ -95,6 +91,7 @@ function checkLanguageOption(options, optionName) {
       return [langToUse, undefined];
     }
     if (langToUse === 'cpp') {loadPrismLang('c');} // cpp dependency c
+    if (langToUse === 'php') {loadPrismLang('markup-templating');} // php dependency markup-templating
     let prismLang = loadPrismLang(langToUse);
     // if (prismLang === undefined && options.defaultLanguageForUnknown !== undefined ) {
     //   langToUse = options.defaultLanguageForUnknown;

@@ -18,6 +18,10 @@ func LogW(msg string, i ...interface{}) {
     revel.AppLog.Warn(msg, i...)
 }
 
+func LogE(msg string, i...interface{}) {
+    revel.AppLog.Error(msg, i...)
+}
+
 func LogJ(i interface{}) {
     b, _ := json.MarshalIndent(i, "", " ")
     revel.AppLog.Info(string(b))

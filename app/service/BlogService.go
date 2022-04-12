@@ -303,7 +303,9 @@ func (this *BlogService) SearchBlogByTags(tags []string, userId string, sortFiel
 
 	// 总记录数
 	count, _ := q.Count()
-	if count == 0 { return }
+	if count == 0 {
+		return
+	}
 
 	q.Sort(sortFieldR...).
 		All(&notes)
@@ -319,17 +321,19 @@ func (this *BlogService) SearchBlogByCate(notebookId, userId, sortField string, 
 	sortFieldR := parseSort(sortField, isAsc)
 
 	query := bson.M{"UserId": bson.ObjectIdHex(userId),
-		"IsTrash":   false,
-		"IsDeleted": false,
-		"IsBlog":    true,
+		"IsTrash":          false,
+		"IsDeleted":        false,
+		"IsBlog":           true,
 		"Cates.NotebookId": bson.M{"$in": []string{notebookId}}}
-		
+
 	q := db.Notes.Find(query)
 
 	// 总记录数
 	count, _ := q.Count()
-	if count == 0 { return }
-	
+	if count == 0 {
+		return
+	}
+
 	q.Sort(sortFieldR...).All(&notes)
 
 	blogs = this.notes2BlogItems(notes)
@@ -1152,7 +1156,7 @@ func (this *BlogService) GetUserBlogUrl(userBlog *info.UserBlog, username string
 
 // 得到所有url
 func (this *BlogService) GetBlogUrls(userBlog *info.UserBlog, userInfo *info.User) info.BlogUrls {
-	var indexUrl, postUrl, searchUrl, cateUrl, singleUrl, tagsUrl, catesUrl, archiveUrl, tagPostsUrl string
+	var indexUrl, postUrl, searchUrl, cateUrl, singleUrl, tagsUrl, catesUrl, rssUrl, archiveUrl, tagPostsUrl string
 
 	/*
 		if userBlog.Domain != "" && configService.AllowCustomDomain() { // http://demo.com
@@ -1194,6 +1198,7 @@ func (this *BlogService) GetBlogUrls(userBlog *info.UserBlog, userInfo *info.Use
 	archiveUrl = blogUrl + "/archives/" + userIdOrEmail // blog.leanote.com/archive/username
 	tagsUrl = blogUrl + "/tags/" + userIdOrEmail
 	catesUrl = blogUrl + "/cates/" + userIdOrEmail
+	rssUrl = blogUrl + "/rss/" + userIdOrEmail
 	tagPostsUrl = blogUrl + "/tag/" + userIdOrEmail // blog.leanote.com/archive/username
 	// catePostUrl = blogUrl + "/cates/" + userIdOrEmail
 	// }
@@ -1208,6 +1213,7 @@ func (this *BlogService) GetBlogUrls(userBlog *info.UserBlog, userInfo *info.Use
 		TagsUrl:     tagsUrl,
 		TagPostsUrl: tagPostsUrl,
 		CatesUrl:    catesUrl,
+		RSSUrl:      rssUrl,
 		// CatePostUrl: catePostUrl,
 	}
 }

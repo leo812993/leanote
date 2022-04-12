@@ -80,6 +80,8 @@ GET     /blog/cates/:userIdOrEmail Blog.Cates
 GET		/blog/cate/:notebookId		Blog.Cate
 GET		/blog/cate/:userIdOrEmail/:notebookId		Blog.Cate
 
+GET     /blog/rss/:userIdOrEmail    Blog.RSS
+
 GET		/blog/listCateLatest/:notebookId	Blog.ListCateLatest
 GET		/blog/:userIdOrEmail		Blog.Index
 GET		/blog						Blog.Index
@@ -110,6 +112,8 @@ GET		/preview/single/:singleId			Preview.Single
 GET     /preview/cates/:userIdOrEmail   Preview.Cates
 GET		/preview/cate/:notebookId		Preview.Cate
 GET		/preview/cate/:userIdOrEmail/:notebookId		Preview.Cate
+
+GET     /blog/rss/:userIdOrEmail    Preview.RSS
 
 GET		/preview/:userIdOrEmail		Preview.Index
 GET		/preview						Preview.Index

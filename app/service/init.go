@@ -24,6 +24,7 @@ var userService, UserS *UserService
 var groupService, GroupS *GroupService
 var tagService, TagS *TagService
 var blogService, BlogS *BlogService
+var staticBlogService, StaticBlogS *StaticBlogService
 var tokenService, TokenS *TokenService
 var noteImageService, NoteImageS *NoteImageService
 var fileService, FileS *FileService
@@ -49,6 +50,7 @@ func InitService() {
 	GroupS = &GroupService{}
 	TagS = &TagService{}
 	BlogS = &BlogService{}
+	StaticBlogS = &StaticBlogService{}
 	TokenS = &TokenService{}
 	NoteImageS = &NoteImageService{}
 	FileS = &FileService{}
@@ -72,6 +74,7 @@ func InitService() {
 	groupService = GroupS
 	tagService = TagS
 	blogService = BlogS
+	staticBlogService = StaticBlogS
 	tokenService = TokenS
 	noteImageService = NoteImageS
 	fileService = FileS

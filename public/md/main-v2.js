@@ -12625,6 +12625,13 @@
         return selection;
     }
 
+    function emptyToolbar() {
+        let toolbars = previewContentsElt.querySelectorAll('pre > .code-toolbar > .toolbar');
+        _.each(toolbars, function (t) {
+            t.innerHTML = '';
+        });
+    }
+
     function registerSelectCodeButton () {
         let toolbars = previewContentsElt.querySelectorAll('pre > .code-toolbar > .toolbar');
         _.each(toolbars, function (t) {
@@ -12671,6 +12678,7 @@
         if (typeof Prism === "undefined") throw new Error("Prism has not loaded yet.");
         // if (typeof Prism.plugins.toolbar === "undefined") { return; }
         editor.hooks.chain("onPreviewRefresh", function() {
+            emptyToolbar();
             registerCopyButton();
         });
     }

@@ -127,5 +127,6 @@ type BlogUrls struct {
 	TagsUrl     string
 	TagPostsUrl string
 	CatesUrl    string
+	RSSUrl      string
 	// CatePostUrl string
 }

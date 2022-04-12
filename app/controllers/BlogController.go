@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	// "io/ioutil"
+	// "os"
 	"strings"
 
 	"github.com/revel/revel"
@@ -15,9 +17,7 @@ import (
 	"github.com/leanote/leanote/app/lea/blog"
 	"gopkg.in/mgo.v2/bson"
 	//	"github.com/leanote/leanote/app/types"
-	//	"io/ioutil"
 	//	"math"
-	//	"os"
 	//	"path"
 )
 
@@ -199,7 +199,9 @@ func (c Blog) getCates(userBlog info.UserBlog) {
 	userId := userBlog.UserId.Hex()
 
 	notebooks := notebookService.GetNotebooksRaw(userId, "Title")
-	if len(notebooks) == 0 {return}
+	if len(notebooks) == 0 {
+		return
+	}
 
 	for _, notebook := range notebooks {
 		notebookId := notebook.NotebookId.Hex()
@@ -220,7 +222,7 @@ func (c Blog) getCates(userBlog info.UserBlog) {
 						}
 					}
 					// childCates 按 Title 升序排序
-					sort.Slice(childCates, func(i,j int)bool{return childCates[i]["Title"].(string) < childCates[j]["Title"].(string)})
+					sort.Slice(childCates, func(i, j int) bool { return childCates[i]["Title"].(string) < childCates[j]["Title"].(string) })
 				}
 
 				cate := map[string]interface{}{"Title": notebook.Title, "UrlTitle": notebook.UrlTitle, "CateId": notebookId,
@@ -232,6 +234,7 @@ func (c Blog) getCates(userBlog info.UserBlog) {
 
 	c.ViewArgs["cates"] = cates
 }
+
 // cates = [{title:"xxx", cateId: "xxxx"}, {}]
 // func (c Blog) getCateUrlTitle(n *info.Notebook) string {
 // 	if n.UrlTitle != "" {
@@ -378,7 +381,8 @@ func (c Blog) blogCommon(userId string, userBlog info.UserBlog, userInfo info.Us
 	if userBlog.UserId == "" {
 		userBlog = blogService.GetUserBlog(userId)
 	}
-	c.setBlog(userBlog, userInfo)
+	c.ViewArgs["blogInfo"] = staticBlogService.GetBlogInfo(userBlog, userInfo)
+	// c.setBlog(userBlog, userInfo)
 	//	c.ViewArgs["userBlog"] = userBlog
 
 	// 分类导航
@@ -387,7 +391,8 @@ func (c Blog) blogCommon(userId string, userBlog info.UserBlog, userInfo info.Us
 	// 单页导航
 	c.getSingles(userId)
 
-	c.setUrl(userBlog, userInfo)
+	staticBlogService.SetBlogUrl(userInfo, userBlog, c.ViewArgs)
+	// c.setUrl(userBlog, userInfo)
 
 	// 当前分类Id, 全设为""
 	// c.ViewArgs["curCateId"] = ""
@@ -572,7 +577,7 @@ func (c Blog) Cates(userIdOrEmail string) (re revel.Result) {
 	if ok, userBlog = c.blogCommon(userId, userBlog, userInfo); !ok {
 		return c.e404(userBlog.ThemePath) // 404 TODO 使用用户的404
 	}
-	
+
 	c.getCates(userBlog)
 	c.ViewArgs["curIsCates"] = true
 
@@ -618,7 +623,7 @@ func (c Blog) Cate(userIdOrEmail string, notebookId string) (re revel.Result) {
 	c.ViewArgs["curIsCate"] = true
 	// cateUrl := c.ViewArgs["cateUrl"].(string) //暂时取消分页
 	// c.ViewArgs["pagingBaseUrl"] = cateUrl + "/" + notebookId
-	
+
 	return c.render("cate.html", userBlog.ThemePath)
 }
 
@@ -802,6 +807,34 @@ func (c Blog) Search(userIdOrEmail, keywords string) (re revel.Result) {
 	c.ViewArgs["curIsSearch"] = true
 
 	return c.render("search.html", userBlog.ThemePath)
+}
+
+//----------------
+// RSS 订阅
+func (c Blog) RSS(userIdOrEmail string) (re revel.Result) {
+	hasDomain, userBlog := c.domain() // 自定义域名
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Println(err)
+			re = c.e404(userBlog.ThemePath)
+		}
+	}()
+
+	userId, userInfo := c.userIdOrEmail(hasDomain, userBlog, userIdOrEmail)
+	var ok = false
+	if ok, userBlog = c.blogCommon(userId, userBlog, userInfo); !ok {
+		return c.e404(userBlog.ThemePath) // 404 TODO 使用用户的404
+	}
+
+	rss := staticBlogService.GenerateRSS(userInfo, userBlog)
+	// rss, e := os.OpenFile("public/blog/"+userId+"/cnm.txt", os.O_RDONLY, 0644)
+	// if e != nil {
+	// 	panic(e)
+	// }
+	// defer rss.Close()
+	// txt, _ := ioutil.ReadFile("public/blog/" + userId + "/rss.xml")
+	// return c.RenderFile(rss, revel.Attachment)
+	return c.RenderText(rss)
 }
 
 // 可以不要, 因为注册的时候已经把username设为email了
