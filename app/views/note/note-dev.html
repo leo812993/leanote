@@ -661,6 +661,9 @@ function log(o) {
 							                </ul>
 							                -->
 						                </div>
+
+										<!-- 字数统计 -->
+										<div id="calcWords"></div>
 						            </div>
 						            <div class="editorBg"></div>
 						        </div>
@@ -902,6 +905,7 @@ var GlobalConfigs = {{.globalConfigs|jsonJs}};
 <script src="/tinymce/tinymce.js"></script>
 
 <script src="/libs/ace/ace.js"></script>
+<script src="/libs/ace/mode-markdown.js"></script>
 
 <!-- dev -->
 <script src="/libs/jquery/jQuery-slimScroll-1.3.0/jquery.slimscroll.js"></script>

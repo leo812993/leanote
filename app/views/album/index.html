@@ -8,7 +8,7 @@
 
 <link href="/libs/bootstrap/bootstrap.min.css" rel="stylesheet">
 <link href="/fonts/font-awesome-4.2.0/css/font-awesome.min.css" rel="stylesheet">
-<link href="/public/album/css/style-min.css" rel="stylesheet" />
+<link href="/public/album/css/style.css" rel="stylesheet" />
 
 </head>
 <body class="md" id="body">
@@ -92,12 +92,12 @@
 				</form> 
             </div>
 
-            <form id="upload" method="post" action="/file/uploadImageLeaui" enctype="multipart/form-data" style="margin-top: 5px;">
+            <form id="upload" method="post" enctype="multipart/form-data" style="margin-top: 5px;">
                 <div id="drop">
                     <a class="btn btn-default">
                         {{leaMsg . "Click to upload images Or Drop images to here"}}
                     </a>
-                    <input type="file" name="file" multiple />
+                    <input type="file" name="file" id="files" multiple />
                 </div>
                 <ul id="upload-msg">
                 </ul>
@@ -153,14 +153,26 @@ G.maxSelected = 1;
 var UrlPrefix = '{{.siteUrl}}';
 </script>
 
-<!--
-<script src="/libs/jquery/jquery-1.9.0.min.js"></script>
-<script src="/libs/bootstrap/bootstrap.min.js"></script>
-<script src="/js/plugins/libs-min/fileupload.js"></script>
-<script src="/libs/jquery/jquery.pagination.js"></script>
-<script src="/public/album/js/main.js"></script>
--->
+<!-- <script src="/public/album/js/main.js"></script> -->
 
-<script src="/public/album/js/main.all.js?i=2"></script>
+{{if eq .ImageBedType "Local"}}
+	<script src="/public/album/js/main.all.js?i=2"></script>
+{{else}}
+	{{if eq .ImageBedType "Qiniu"}}
+		<script>
+			G.CloudDomain = "{{.Cloud.DomainName}}";
+			G.CloudZone = "{{.Cloud.Area}}";
+			// G.CloudSaveKey = "{{.Cloud.SaveKey}}";
+		</script>
+		<script src="/public/album/js/qiniu.js"></script>
+		<!-- <script src="//cdn.staticfile.org/qiniu-js/3.4.0/qiniu.min.js"></script> -->
+		<!-- <script src="//cdn.staticfile.org/crypto-js/4.1.1/crypto-js.min.js"></script> -->
+	{{end}}
+	<script src="/libs/jquery/jquery-1.9.0.min.js"></script>
+	<script src="/libs/bootstrap/bootstrap.min.js"></script>
+	<script src="/js/plugins/libs-min/fileupload.js"></script>
+	<script src="/libs/jquery/jquery.pagination.js"></script>
+	<script src="/public/album/js/cloud.js"></script>
+{{end}}
 
 </html>

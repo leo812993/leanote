@@ -16,6 +16,7 @@ bin/tmp
 bin/test
 /build
 public/upload
+public/blog
 app/routes/routes.go
 app/tmp/main.go
 .DS_Store

@@ -212,6 +212,16 @@
     width: auto
 }
 
+#mdEditor .wmd-button-bar-inner {
+    position: absolute;
+}
+
+#mdEditor #calcWords {
+    float: right;
+    padding-top: 6px;
+    padding-right: 10px;
+}
+
 #mdEditor.read-only .info-toolbar {
     display: block
 }
@@ -219,6 +229,8 @@
 #mdEditor.read-only .wmd-button-bar-inner, #mdEditor.read-only #mdSplitter2, #mdEditor.read-only .btn-info {
     display: none
 }
+
+
 
 #mdEditor.read-only #left-column {
     visibility: hidden

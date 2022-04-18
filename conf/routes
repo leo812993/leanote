@@ -113,7 +113,7 @@ GET     /preview/cates/:userIdOrEmail   Preview.Cates
 GET		/preview/cate/:notebookId		Preview.Cate
 GET		/preview/cate/:userIdOrEmail/:notebookId		Preview.Cate
 
-GET     /blog/rss/:userIdOrEmail    Preview.RSS
+GET     /preview/rss/:userIdOrEmail    Preview.RSS
 
 GET		/preview/:userIdOrEmail		Preview.Index
 GET		/preview						Preview.Index

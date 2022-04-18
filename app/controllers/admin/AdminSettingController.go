@@ -4,8 +4,10 @@ import (
 	"github.com/revel/revel"
 	//	. "github.com/leanote/leanote/app/lea"
 	"fmt"
-	"github.com/leanote/leanote/app/info"
 	"strings"
+
+	"github.com/leanote/leanote/app/info"
+	"github.com/leanote/leanote/app/service"
 )
 
 // admin 首页
@@ -138,5 +140,21 @@ func (c AdminSetting) UploadSize(uploadImageSize, uploadAvatarSize, uploadBlogLo
 	re.Ok = configService.UpdateGlobalStringConfig(c.GetUserId(), "uploadAvatarSize", fmt.Sprintf("%v", uploadAvatarSize))
 	re.Ok = configService.UpdateGlobalStringConfig(c.GetUserId(), "uploadBlogLogoSize", fmt.Sprintf("%v", uploadBlogLogoSize))
 	re.Ok = configService.UpdateGlobalStringConfig(c.GetUserId(), "uploadAttachSize", fmt.Sprintf("%v", uploadAttachSize))
+	re.Ok = configService.UpdateGlobalStringConfig(c.GetUserId(), "ImageBedType", "Local")
+	return c.RenderJSON(re)
+}
+
+func (c AdminSetting) UploadImageBed(accessKey, area, bucket, cloudName, domainName, saveKey, secretKey string) revel.Result {
+	re := info.NewRe()
+	if saveKey == "" {
+		saveKey = "$(etag).$(ext)"
+	}
+	m := map[string]string{"AccessKey": accessKey, "Area": area, "Bucket": bucket, "DomainName": domainName, "SaveKey": saveKey, "SecretKey": secretKey}
+	re.Ok = configService.UpdateGlobalStringConfig(c.GetUserId(), "ImageBedType", cloudName)
+	re.Ok = configService.UpdateGlobalMapConfig(c.GetUserId(), "Cloud_"+cloudName, m)
+
+	if re.Ok {
+		service.ChangeCloud()
+	}
 	return c.RenderJSON(re)
 }

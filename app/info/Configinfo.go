@@ -7,7 +7,6 @@ import (
 
 // 配置, 每一个配置一行记录
 type Config struct {
-	ConfigId    bson.ObjectId       `bson:"_id"`
 	UserId      bson.ObjectId       `UserId`
 	Key         string              `Key`
 	ValueStr    string              `ValueStr,omitempty`    // "1"

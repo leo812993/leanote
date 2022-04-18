@@ -49,6 +49,7 @@
   margin-top: 10px;
   padding: 0;
   height: 196px;
+  overflow: auto;
 }
 #imageList li {
   display: inline-block;

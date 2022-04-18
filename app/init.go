@@ -427,10 +427,11 @@ func init() {
 		// memcache.InitMemcache() // session服务
 		// 其它service
 		service.InitService()
-		controllers.InitService()
 		admin.InitService()
 		member.InitService()
 		service.ConfigS.InitGlobalConfigs()
+		service.InitCloudService()
+		controllers.InitService() // InitCloud要在InitGlobalConfigs 之后调用，controllers.InitService()需要在InitCloud之后
 		api.InitService()
 	})
 }

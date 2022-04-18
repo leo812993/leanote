@@ -17,6 +17,14 @@ type Album struct {
 // 图片管理, iframe
 func (c Album) Index() revel.Result {
 	c.SetLocale()
+	imageBedType := configService.GetGlobalStringConfig("ImageBedType")
+	if len(imageBedType) == 0 {
+		imageBedType = "Local"
+	}
+	c.ViewArgs["ImageBedType"] = imageBedType
+	if imageBedType == "Qiniu" {
+		c.ViewArgs["Cloud"] = configService.GetGlobalMapConfig("Cloud_Qiniu")
+	}
 	return c.RenderTemplate("album/index.html")
 }
 

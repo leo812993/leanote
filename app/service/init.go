@@ -28,6 +28,7 @@ var staticBlogService, StaticBlogS *StaticBlogService
 var tokenService, TokenS *TokenService
 var noteImageService, NoteImageS *NoteImageService
 var fileService, FileS *FileService
+var cloudService, CloudS CloudService // 接口类型
 var albumService, AlbumS *AlbumService
 var attachService, AttachS *AttachService
 var configService, ConfigS *ConfigService

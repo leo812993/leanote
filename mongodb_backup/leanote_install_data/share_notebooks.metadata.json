@@ -1,1 +1,1 @@
-{"indexes":[{"v":1,"key":{"_id":1},"name":"_id_","ns":"leanote_bin_test.share_notebooks"},{"v":1,"key":{"ToUserId":1},"name":"ToUserId_1","ns":"leanote_bin_test.share_notebooks","background":true}]}
+{"options":{},"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_","ns":"leanote2.share_notebooks"},{"v":{"$numberInt":"2"},"key":{"ToUserId":{"$numberInt":"1"}},"name":"ToUserId_1","ns":"leanote2.share_notebooks","background":true}],"uuid":"138eae24ce4344d89a3d5476ee5a4f21"}

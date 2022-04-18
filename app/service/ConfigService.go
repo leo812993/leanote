@@ -93,58 +93,34 @@ func (this *ConfigService) GetAdminUserId() string {
 
 // 通用方法
 func (this *ConfigService) updateGlobalConfig(userId, key string, value interface{}, isArr, isMap, isArrMap bool) bool {
-	// 判断是否存在
-	if _, ok := this.GlobalAllConfigs[key]; !ok {
-		// 需要添加
-		config := info.Config{ConfigId: bson.NewObjectId(),
-			UserId:      bson.ObjectIdHex(userId), // 没用
-			Key:         key,
-			IsArr:       isArr,
-			IsMap:       isMap,
-			IsArrMap:    isArrMap,
-			UpdatedTime: time.Now(),
-		}
-		if isArr {
-			v, _ := value.([]string)
-			config.ValueArr = v
-			this.GlobalArrayConfigs[key] = v
-		} else if isMap {
-			v, _ := value.(map[string]string)
-			config.ValueMap = v
-			this.GlobalMapConfigs[key] = v
-		} else if isArrMap {
-			v, _ := value.([]map[string]string)
-			config.ValueArrMap = v
-			this.GlobalArrMapConfigs[key] = v
-		} else {
-			v, _ := value.(string)
-			config.ValueStr = v
-			this.GlobalStringConfigs[key] = v
-		}
-		return db.Insert(db.Configs, config)
-	} else {
-		i := bson.M{"UpdatedTime": time.Now()}
-		this.GlobalAllConfigs[key] = value
-		if isArr {
-			v, _ := value.([]string)
-			i["ValueArr"] = v
-			this.GlobalArrayConfigs[key] = v
-		} else if isMap {
-			v, _ := value.(map[string]string)
-			i["ValueMap"] = v
-			this.GlobalMapConfigs[key] = v
-		} else if isArrMap {
-			v, _ := value.([]map[string]string)
-			i["ValueArrMap"] = v
-			this.GlobalArrMapConfigs[key] = v
-		} else {
-			v, _ := value.(string)
-			i["ValueStr"] = v
-			this.GlobalStringConfigs[key] = v
-		}
-		// return db.UpdateByQMap(db.Configs, bson.M{"UserId": bson.ObjectIdHex(userId), "Key": key}, i)
-		return db.UpdateByQMap(db.Configs, bson.M{"Key": key}, i)
+
+	// 需要添加
+	config := info.Config{
+		UserId:      bson.ObjectIdHex(userId),
+		Key:         key,
+		IsArr:       isArr,
+		IsMap:       isMap,
+		IsArrMap:    isArrMap,
+		UpdatedTime: time.Now(),
 	}
+	switch v := value.(type) {
+	case []string:
+		config.ValueArr = v
+		this.GlobalArrayConfigs[key] = v
+	case map[string]string:
+		config.ValueMap = v
+		this.GlobalMapConfigs[key] = v
+	case []map[string]string:
+		config.ValueArrMap = v
+		this.GlobalArrMapConfigs[key] = v
+	case string:
+		config.ValueStr = v
+		this.GlobalStringConfigs[key] = v
+	default:
+		return false
+	}
+	_, err := db.Configs.Upsert(bson.M{"UserId": config.UserId, "Key": config.Key}, config)
+	return db.Err(err)
 }
 
 // 更新用户配置

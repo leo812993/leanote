@@ -1,57 +1,122 @@
 {{template "admin/top.html" .}}
-<div class="m-b-md"> <h3 class="m-b-none">Upload File Size Limit</h3></div>
+<div class="m-b-md">
+	<h3 class="m-b-none">Upload File Setting</h3>
+</div>
+
+{{set . "imageBedType" .str.ImageBedType}}
+{{if not .imageBedType}}
+	{{set . "imageBedType" "Local"}}
+{{end}}
 
 <div class="row">
-
-<div class="col-sm-6">
-	<form id="add_user_form">
+	<div class="col-sm-6">
 		<section class="panel panel-default">
-			<div class="panel-body">
-				<div class="form-group">
-					<label>Image</label>
-					<input type="text" class="form-control" name="uploadImageSize" value="{{.str.uploadImageSize}}">
-					MB. Default is unlimit;
-				</div>
-				<div class="form-group">
-					<label>Avatar</label>
-					<input type="text" class="form-control" name="uploadAvatarSize" value="{{.str.uploadAvatarSize}}">
-					MB. Default is unlimit;
-				</div>
-				<div class="form-group">
-					<label>Blog Logo</label>
-					<input type="text" class="form-control" name="uploadBlogLogoSize" value="{{.str.uploadBlogLogoSize}}">
-					MB. Default is unlimit;
-				</div>
-				<div class="form-group">
-					<label>Attachment</label>
-					<input type="text" class="form-control" name="uploadAttachSize" value="{{.str.uploadAttachSize}}">
-					MB. Default is unlimit;
-				</div>
+			<div id="storageSet" class="panel-body">
+				<label>
+					<input type="radio" name="storageType" value="local"{{if eq .imageBedType "Local"}} checked="checked"{{end}}> Local
+				</label>
+				<label>
+					<input type="radio" name="storageType" id="cloud" value="qiniu"{{if eq .imageBedType "Qiniu"}} checked="checked"{{end}}> Qiniu
+				</label>
 			</div>
-			
-			<footer class="panel-footer text-right bg-light lter">
-				<button type="submit" id="submit" class="btn btn-success btn-s-xs">Submit</button>
-			</footer>
 		</section>
-	</form>
-</div>
+
+		<form id="cloud_setting_form"{{if not (eq .imageBedType "Qiniu")}} style="display: none"{{end}}>
+			<section class="panel panel-default">
+				<div class="panel-body">
+					<div class="form-group">
+						<label>CloudName</label>
+						<input type="text" class="form-control" name="cloudName" value="Qiniu" readonly>
+						暂只支持七牛。
+					</div>
+					<div class="form-group">
+						<label>Access Key(AK)</label>
+						<input type="text" class="form-control" name="accessKey" value="{{.map.Cloud_Qiniu.AccessKey}}">
+					</div>
+					<div class="form-group">
+						<label>Secret Key(SK)</label>
+						<input type="text" class="form-control" name="secretKey" value="{{.map.Cloud_Qiniu.SecretKey}}">
+					</div>
+					<div class="form-group">
+						<label>Bucket</label>
+						<input type="text" class="form-control" name="bucket" value="{{.map.Cloud_Qiniu.Bucket}}">
+						存储空间名称
+					</div>
+					<div class="form-group">
+						<label>Area</label>
+						<input type="text" class="form-control" name="area" value="{{.map.Cloud_Qiniu.Area}}">
+						存储空间区域：华南、华北、华东、北美、新加坡、东南亚、华东-浙江2
+					</div>
+					<div class="form-group">
+						<label>Save Key(Optional)</label>
+						<input type="text" class="form-control" name="saveKey" value="{{.map.Cloud_Qiniu.SaveKey}}">
+						自定义保存文件名：<a href="https://developer.qiniu.com/kodo/1235/vars">魔法变量</a>
+						<br/>
+						如配置为 <code>image/$(year)$(mon)$(day)/$(etag).$(ext)</code>，则最终图片的保存路径为 <code>image/20190401/FlM6_0RQjjfz2jPHOlKqYeCkGMUM.jpg</code>。置空则默认为 <code>$(etag).$(ext)</code>。
+					</div>
+					<div class="form-group">
+						<label>DomainName</label>
+						<input type="text" class="form-control" name="domainName" value="{{.map.Cloud_Qiniu.DomainName}}">
+						存储空间绑定域名：http(s)://xxx.xx.x
+					</div>
+				</div>
+
+				<footer class="panel-footer text-right bg-light lter">
+					<button type="submit" id="cloud_submit" class="btn btn-success btn-s-xs">Submit</button>
+				</footer>
+			</section>
+		</form>
+
+		<form id="add_user_form"{{if not (eq .imageBedType "Local")}} style="display: none"{{end}}>
+			<section class="panel panel-default">
+				<div class="panel-body" id="localsetting">
+					<div class="form-group">
+						<label>Image</label>
+						<input type="text" class="form-control" name="uploadImageSize" value="{{.str.uploadImageSize}}">
+						MB. Default is unlimit;
+					</div>
+					<div class="form-group">
+						<label>Avatar</label>
+						<input type="text" class="form-control" name="uploadAvatarSize"
+							value="{{.str.uploadAvatarSize}}">
+						MB. Default is unlimit;
+					</div>
+					<div class="form-group">
+						<label>Blog Logo</label>
+						<input type="text" class="form-control" name="uploadBlogLogoSize"
+							value="{{.str.uploadBlogLogoSize}}">
+						MB. Default is unlimit;
+					</div>
+					<div class="form-group">
+						<label>Attachment</label>
+						<input type="text" class="form-control" name="uploadAttachSize"
+							value="{{.str.uploadAttachSize}}">
+						MB. Default is unlimit;
+					</div>
+				</div>
+
+				<footer class="panel-footer text-right bg-light lter">
+					<button type="submit" id="local_submit" class="btn btn-success btn-s-xs">Submit</button>
+				</footer>
+			</section>
+		</form>
+	</div>
 
 </div>
 
 {{template "admin/footer.html" .}}
 <script src="/public/admin/js/jquery-validation-1.13.0/jquery.validate.js"></script>
 <script>
-$(function() {
-	init_validator("#add_user_form");
-	
-	$("#submit").click(function(e){
+	$(function () {
+		init_validator("#add_user_form");
+		$("#local_submit").click(function (e) {
 			e.preventDefault();
 			var t = this;
-			if($("#add_user_form").valid()) {
+			if ($("#add_user_form").valid()) {
 				$(t).button('loading');
-				ajaxPost("/adminSetting/uploadSize", getFormJsonData("add_user_form"), function(ret){
+				ajaxPost("/adminSetting/uploadSize", getFormJsonData("add_user_form"), function (ret) {
 					$(t).button('reset')
-					if(!ret.Ok) {
+					if (!ret.Ok) {
 						art.alert(ret.Msg)
 					} else {
 						art.tips("Success");
@@ -59,7 +124,34 @@ $(function() {
 				});
 			}
 		});
-});
+
+		init_validator("#cloud_setting_form");
+		$("#cloud_submit").click(function (e) {
+			e.preventDefault();
+			var t = this;
+			if ($("#cloud_setting_form").valid()) {
+				$(t).button('loading');
+				ajaxPost("/adminSetting/uploadImageBed", getFormJsonData("cloud_setting_form"), function (ret) {
+					$(t).button('reset')
+					if (!ret.Ok) {
+						art.alert(ret.Msg)
+					} else {
+						art.tips("Success");
+					}
+				});
+			}
+		});
+	});
+
+	$("input[name='storageType']").click(function () {
+		if ($("input[name='storageType']:checked").val() == "local") {
+			$("#add_user_form").show();
+			$("#cloud_setting_form").hide();
+		} else {
+			$("#add_user_form").hide();
+			$("#cloud_setting_form").show();
+		}
+	});
 </script>
 
 {{template "admin/end.html" .}}
