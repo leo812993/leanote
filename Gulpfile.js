@@ -1,6 +1,6 @@
 var gulp = require('gulp');
 var clean = require('gulp-clean');
-var uglify = require('gulp-uglify');
+var uglify = require('gulp-uglify-es').default;
 var rename = require('gulp-rename');
 var minifyHtml = require("gulp-minify-html");
 var concat = require('gulp-concat');
@@ -87,7 +87,9 @@ gulp.task('concatAppJs', function() {
 
     return gulp
         .src(jss)
-        .pipe(uglify()) // 压缩
+        .pipe(uglify().on('error', function(e) {
+            console.log(e);
+        })) // 压缩
         .pipe(concat('app.min.js'))
         .pipe(gulp.dest(base + '/js'));
 });
@@ -304,13 +306,13 @@ gulp.task('i18n', function() {
 
         // 写入到文件中
         var toFilename = targetFilename + '.' + lang + '.js';
-        fs.writeFile(base + '/js/i18n/' + toFilename, str);
+        fs.writeFile(base + '/js/i18n/' + toFilename, str, function(){});
     }
 
     function genTinymceLang(lang) {
         var msgs = getAllMsgs(leanoteBase + 'messages/' + lang + '/tinymce_editor.conf');
         var str = 'tinymce.addI18n("' + lang + '",' + JSON.stringify(msgs) + ');';
-        fs.writeFile(base + '/tinymce/langs/' + lang + '.js', str);
+        fs.writeFile(base + '/tinymce/langs/' + lang + '.js', str, function(){});
     }
 
     var langs = getAllLangs();

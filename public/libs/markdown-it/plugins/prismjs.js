@@ -2,7 +2,7 @@
 const NEW_LINE_EXP = /\n(?!$)/g;
 const DEFAULTS = {
   plugins: [],
-  init: () => {},
+  init: () => { },
   defaultLanguageForUnknown: undefined,
   defaultLanguageForUnspecified: undefined,
   defaultLanguage: undefined,
@@ -55,10 +55,10 @@ function checkLanguageOption(options, optionName) {
   typeof exports === "object" && typeof module !== "undefined"
     ? (module.exports = factory())
     : typeof define === "function" && define.amd
-    ? define(["prismjs"], factory)
-    : ((global =
+      ? define(["prismjs"], factory)
+      : ((global =
         typeof globalThis !== "undefined" ? globalThis : global || self),
-      (global.markdownitPrismjs = factory()));
+        (global.markdownitPrismjs = factory()));
 })(this, function () {
   "use strict";
 
@@ -69,12 +69,17 @@ function checkLanguageOption(options, optionName) {
     if (!(lang in components.languages)) return undefined;
     let langObject = Prism.languages[lang];
     if (langObject === undefined) {
-      // require(["prismjs/components/prism-" + lang + '.min'], () => {
-      //     requirejs_done = true;
-      //     langObject = Prism.languages[lang];
-      // });
-      // loadJS("//cdn.jsdelivr.net/npm/prismjs@1/components/prism-"+lang+'.min.js');
-      loadJS("/libs/prismjs/components/prism-" + lang + ".min.js");
+      if (typeof CDN_URL === "undefined") {
+        loadJS("/libs/prismjs/components/prism-" + lang + ".min.js");
+      } else {
+        // requirejs.config({ paths: { 'prismjs': '//' + CDN_URL + "/npm/prismjs@1.26.0/components/prism-" + lang + '.min.js' } });
+        // require(["prismjs/components/prism-" + lang + '.min'], () => {
+        //   requirejs_done = true;
+        //   langObject = Prism.languages[lang];
+        //   return langObject;
+        // });
+        loadJS("//" + CDN_URL + "/npm/prismjs@1.26.0/components/prism-" + lang + '.min.js');
+      }
       langObject = Prism.languages[lang];
     }
     return langObject;
@@ -90,8 +95,8 @@ function checkLanguageOption(options, optionName) {
       langToUse = options.defaultLanguageForUnspecified;
       return [langToUse, undefined];
     }
-    if (langToUse === 'cpp') {loadPrismLang('c');} // cpp dependency c
-    if (langToUse === 'php') {loadPrismLang('markup-templating');} // php dependency markup-templating
+    if (langToUse === 'cpp') { loadPrismLang('c'); } // cpp dependency c
+    if (langToUse === 'php') { loadPrismLang('markup-templating'); } // php dependency markup-templating
     let prismLang = loadPrismLang(langToUse);
     // if (prismLang === undefined && options.defaultLanguageForUnknown !== undefined ) {
     //   langToUse = options.defaultLanguageForUnknown;
@@ -115,9 +120,8 @@ function checkLanguageOption(options, optionName) {
       code = code_list
         .map((line, num) => {
           // return `<li class="L${num%10} prettyprint linenums"><code class="language-${langToUse}">${line}</code></li>` // 和行号的颜色进行区分，只能这么包一下
-          return `<li class="L${
-            num % 10
-          } prettyprint linenums"><span>${line}</span></li>`;
+          return `<li class="L${num % 10
+            } prettyprint linenums"><span>${line}</span></li>`;
         })
         .join("");
       code = `<ol class="linenums">${code}</ol>`;
@@ -202,8 +206,8 @@ function checkLanguageOption(options, optionName) {
       options = Object.assign(options, DEFAULTS, opts);
 
       let info = tokens[idx].info
-          ? md.utils.unescapeAll(tokens[idx].info).trim()
-          : "",
+        ? md.utils.unescapeAll(tokens[idx].info).trim()
+        : "",
         langName = "",
         langAttrs = "";
       if (info) {

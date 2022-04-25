@@ -123,16 +123,17 @@ func (this *StaticBlogService) GenerateRSS(userInfo info.User, userBlog info.Use
   <link>` + configService.GetSiteUrl() + `</link>
   <description>` + userBlog.SubTitle + `</description>`
 
-	_, blogs := blogService.ListBlogs(userId, "", 1, userBlog.PerPageSize, userBlog.SortField, false) // page 从1开始计数，最新的PerPageSize篇， 降序
+	_, blogs := blogService.ListBlogs(userId, "", 1, userBlog.PerPageSize, "PublicTime", false) // page 从1开始计数，最新的PerPageSize篇， 降序, userBlog.SortField
 	for _, b := range blogs {
-		var pubDate time.Time
-		if userBlog.SortField == "CreatedTime" {
-			pubDate = b.CreatedTime
-		} else if userBlog.SortField == "UpdatedTime" {
-			pubDate = b.UpdatedTime
-		} else {
-			pubDate = b.PublicTime
-		}
+		pubDate := b.PublicTime
+		// var pubDate time.Time
+		// if userBlog.SortField == "CreatedTime" {
+		// 	pubDate = b.CreatedTime
+		// } else if userBlog.SortField == "UpdatedTime" {
+		// 	pubDate = b.UpdatedTime
+		// } else {
+		// 	pubDate = b.PublicTime
+		// }
 
 		rss += `
   <item>

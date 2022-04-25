@@ -1,0 +1,38 @@
+name: Release
+on:
+  release:
+    types: [published]
+jobs:
+  releases:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - goarch: amd64
+          - goarch: arm64
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+        with:
+          go-version: '>=1.18.0'
+      - name: Install Dependencies
+        run: |
+          sudo apt install -y zip
+          go install github.com/revel/cmd/revel@latest
+          mkdir -p build
+          wget https://gist.githubusercontent.com/ctaoist/1eb184c539ed6d02d5dc765f3b5481f2/raw/a4ccc0fd6349a7e5f7c04ec351b158a8677f398a/build_leanote.sh
+          mv build_leanote.sh build/
+          chmod a+x build/build_leanote.sh
+      - name: Build Leanote
+        run: ./build/build_leanote.sh linux ${{matrix.goarch}} ${{github.event.release.tag_name}}
+      - name: Uploading assets
+        if: ${{ !env.ACT }}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./build/leanote-linux-${{matrix.goarch}}-${{github.event.release.tag_name}}.zip
+          asset_name: leanote-linux-${{matrix.goarch}}-${{github.event.release.tag_name}}.zip
+          asset_content_type: application/zip

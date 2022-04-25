@@ -1,11 +1,11 @@
 const UPLOAD_URL = {
-    "华东": "http://up.qiniu.com",
-    "华南": "http://up-z2.qiniu.com",
-    "华北": "http://up-z1.qiniu.com",
-    "北美": "http://up-na0.qiniu.com",
-    "东南亚": "http://up-as0.qiniup.com",
-    "华东-浙江2": "http://up-cn-east-2.qiniup.com",
-}
+    "华东": "https://up.qiniu.com",
+    "华南": "https://up-z2.qbox.me", // ssl 证书对不上
+    "华北": "https://up-z1.qbox.me",
+    "北美": "https://up-na0.qbox.me",
+    "东南亚": "https://up-as0.qiniup.com",
+    "华东-浙江2": "https://up-cn-east-2.qiniup.com",
+};
 
 G.ImageBedType = "Qiniu";
 G.TokenExpire = 30 * 24 * 3600 * 1000 - 10 * 1000; // Token 过期时间，单位毫秒，这表示30天
