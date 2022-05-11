@@ -51,28 +51,30 @@ func (c AdminSetting) ShareNote(registerSharedUserId string,
 // demo
 // blog标签设置
 func (c AdminSetting) Demo() revel.Result {
-	c.ViewArgs["demoUsername"] = configService.GetGlobalStringConfig("demoUsername")
-	c.ViewArgs["demoPassword"] = configService.GetGlobalStringConfig("demoPassword")
-	return c.RenderTemplate("admin/setting/demo.html")
+	// c.ViewArgs["demoUsername"] = configService.GetGlobalStringConfig("demoUsername")
+	// c.ViewArgs["demoPassword"] = configService.GetGlobalStringConfig("demoPassword")
+	// return c.RenderTemplate("admin/setting/demo.html")
+	return c.RenderJSON(info.Re{Ok: false, Msg: "Forbidden!"})
 }
 func (c AdminSetting) DoDemo(demoUsername, demoPassword string) revel.Result {
-	re := info.NewRe()
+	return c.Demo()
+	// re := info.NewRe()
 
-	userInfo, err := authService.Login(demoUsername, demoPassword)
-	if err != nil {
-		fmt.Println(err)
-		return c.RenderJSON(info.Re{Ok: false})
-	}
-	if userInfo.UserId == "" {
-		re.Msg = "The User is Not Exists"
-		return c.RenderJSON(re)
-	}
+	// userInfo, err := authService.Login(demoUsername, demoPassword)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return c.RenderJSON(info.Re{Ok: false})
+	// }
+	// if userInfo.UserId == "" {
+	// 	re.Msg = "The User is Not Exists"
+	// 	return c.RenderJSON(re)
+	// }
 
-	re.Ok = configService.UpdateGlobalStringConfig(c.GetUserId(), "demoUserId", userInfo.UserId.Hex())
-	re.Ok = configService.UpdateGlobalStringConfig(c.GetUserId(), "demoUsername", demoUsername)
-	re.Ok = configService.UpdateGlobalStringConfig(c.GetUserId(), "demoPassword", demoPassword)
+	// re.Ok = configService.UpdateGlobalStringConfig(c.GetUserId(), "demoUserId", userInfo.UserId.Hex())
+	// re.Ok = configService.UpdateGlobalStringConfig(c.GetUserId(), "demoUsername", demoUsername)
+	// re.Ok = configService.UpdateGlobalStringConfig(c.GetUserId(), "demoPassword", demoPassword)
 
-	return c.RenderJSON(re)
+	// return c.RenderJSON(re)
 }
 
 func (c AdminSetting) ExportPdf(path string) revel.Result {

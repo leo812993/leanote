@@ -204,7 +204,7 @@ func (this *NoteService) ListNotes(userId, notebookId string,
 	if isBlog {
 		query["IsBlog"] = true
 	}
-	
+
 	if notebookId != "" {
 		query["NotebookId"] = bson.ObjectIdHex(notebookId)
 	}
@@ -309,7 +309,7 @@ func (this *NoteService) AddNote(note info.Note, fromApi bool) info.Note {
 	tagService.AddTags(note.UserId.Hex(), note.Tags)
 
 	// recount notebooks' notes number
-	notebookService.ReCountNotebookNumberNotes(notebookId)
+	notebookService.ReCountNotebookNumberNotes(note.UserId.Hex(), notebookId)
 
 	return note
 }
@@ -531,8 +531,7 @@ func (this *NoteService) UpdateNote(updatedUserId, noteId string, needUpdate bso
 	if notebookIdI != nil {
 		notebookId := notebookIdI.(bson.ObjectId)
 		if notebookId != "" {
-			notebookService.ReCountNotebookNumberNotes(note.NotebookId.Hex())
-			notebookService.ReCountNotebookNumberNotes(notebookId.Hex())
+			notebookService.ReCountNotebookNumberNotes(userId, notebookId.Hex(), note.NotebookId.Hex())
 			hasRecount = true
 		}
 	}
@@ -545,7 +544,7 @@ func (this *NoteService) UpdateNote(updatedUserId, noteId string, needUpdate bso
 			shareService.DeleteShareNoteAll(noteId, userId)
 		}
 		if !hasRecount {
-			notebookService.ReCountNotebookNumberNotes(note.NotebookId.Hex())
+			notebookService.ReCountNotebookNumberNotes(userId, note.NotebookId.Hex())
 		}
 	}
 
@@ -698,11 +697,11 @@ func (this *NoteService) MoveNote(noteId, notebookId, userId string) info.Note {
 			// 更新blog状态
 			this.updateToNotebookBlog(noteId, notebookId, userId)
 
-			// recount notebooks' notes number
-			notebookService.ReCountNotebookNumberNotes(notebookId)
 			// 之前不是trash才统计, trash本不在统计中的
 			if !note.IsTrash && preNotebookId != notebookId {
-				notebookService.ReCountNotebookNumberNotes(preNotebookId)
+				notebookService.ReCountNotebookNumberNotes(userId, notebookId, preNotebookId)
+			} else { // recount notebooks' notes number
+				notebookService.ReCountNotebookNumberNotes(userId, notebookId)
 			}
 		}
 
@@ -754,7 +753,7 @@ func (this *NoteService) CopyNote(noteId, notebookId, userId string) info.Note {
 		isBlog := this.updateToNotebookBlog(note.NoteId.Hex(), notebookId, userId)
 
 		// recount
-		notebookService.ReCountNotebookNumberNotes(notebookId)
+		notebookService.ReCountNotebookNumberNotes(userId, notebookId)
 
 		note.IsBlog = isBlog
 
@@ -802,7 +801,7 @@ func (this *NoteService) CopySharedNote(noteId, notebookId, fromUserId, myUserId
 		isBlog := this.updateToNotebookBlog(note.NoteId.Hex(), notebookId, myUserId)
 
 		// recount
-		notebookService.ReCountNotebookNumberNotes(notebookId)
+		notebookService.ReCountNotebookNumberNotes(myUserId, notebookId)
 
 		note.IsBlog = isBlog
 		return note

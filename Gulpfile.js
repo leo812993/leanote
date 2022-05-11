@@ -21,7 +21,7 @@ var messagesPath = leanoteBase + 'messages';
 // 840kb, 非常耗时!!
 gulp.task('concatDepJs', function() {
     var jss = [
-        'libs/jquery/jquery-1.9.0.min.js',
+        'libs/jquery/jquery.min.js',
         'libs/jquery/jquery.ztree.all-3.5-min.js',
         // 'tinymce/tinymce.full.min.js', // 使用打成的包, 加载速度快
         // 'libs/ace/ace.js',
@@ -340,7 +340,7 @@ gulp.task('concatAlbumJs', function() {
         .pipe(gulp.dest(base + '/album/css'));
 
     var jss = [
-        'libs/jquery/jquery-1.9.0.min.js',
+        // 'libs/jquery/jquery.min.js',
         'libs/bootstrap/bootstrap-min.js',
         'js/plugins/libs-min/fileupload.js',
         'libs/jquery/jquery.pagination.js',

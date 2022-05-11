@@ -176,7 +176,7 @@ func (c Blog) setUrl(userBlog info.UserBlog, userInfo info.User) {
 	c.ViewArgs["themeBaseUrl"] = "/" + userBlog.ThemePath
 
 	// 其它static js
-	c.ViewArgs["jQueryUrl"] = "/public/libs/jquery/jquery-1.9.0.min.js"
+	c.ViewArgs["jQueryUrl"] = "/public/libs/jquery/jquery.min.js"
 
 	c.ViewArgs["prettifyJsUrl"] = "/public/libs/google-code-prettify/prettify.js"
 	c.ViewArgs["prettifyCssUrl"] = "/public/libs/google-code-prettify/prettify.css"
@@ -820,6 +820,10 @@ func (c Blog) RSS(userIdOrEmail string) (re revel.Result) {
 		}
 	}()
 
+	// 用户id为空, 则是admin用户的Rss
+	if userIdOrEmail == "" {
+		userIdOrEmail = configService.GetAdminUsername()
+	}
 	userId, userInfo := c.userIdOrEmail(hasDomain, userBlog, userIdOrEmail)
 	var ok = false
 	if ok, userBlog = c.blogCommon(userId, userBlog, userInfo); !ok {
@@ -835,6 +839,38 @@ func (c Blog) RSS(userIdOrEmail string) (re revel.Result) {
 	// txt, _ := ioutil.ReadFile("public/blog/" + userId + "/rss.xml")
 	// return c.RenderFile(rss, revel.Attachment)
 	return c.RenderText(rss)
+}
+
+// ----------------
+// SiteMap
+func (c Blog) SiteMap(userIdOrEmail string) (re revel.Result) {
+	hasDomain, userBlog := c.domain() // 自定义域名
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Println(err)
+			re = c.e404(userBlog.ThemePath)
+		}
+	}()
+
+	// 用户id为空, 则是admin用户的SiteMap
+	if userIdOrEmail == "" {
+		userIdOrEmail = configService.GetAdminUsername()
+	}
+	userId, userInfo := c.userIdOrEmail(hasDomain, userBlog, userIdOrEmail)
+	var ok = false
+	if ok, userBlog = c.blogCommon(userId, userBlog, userInfo); !ok {
+		return c.e404(userBlog.ThemePath) // 404 TODO 使用用户的404
+	}
+
+	sitemap := staticBlogService.GenerateSiteMapTXT(userInfo, userBlog)
+	// sitemap, e := os.OpenFile("public/blog/"+userId+"/sitemap.xml", os.O_RDONLY, 0644)
+	// defer sitemap.Close()
+	// if e != nil {
+	// 	panic(e)
+	// }
+	// return c.RenderFile(sitemap, revel.Inline)
+	// return c.RenderXML(sitemap)
+	return c.RenderText(sitemap)
 }
 
 // 可以不要, 因为注册的时候已经把username设为email了

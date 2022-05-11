@@ -95,8 +95,8 @@ func ParseAndSortNotebooks(userNotebooks []info.Notebook, noParentDelete, needSo
 	return final
 }
 
-// 得到 notebook 的分类及父分类 ["Life": {}, "Life1": {}, "Life11": {}] 层级关系：Life -> Life.1 -> Life.1.1
-func (this *NotebookService) GetNotebookIdsAndTitles (notebookId, userId string) (cates []map[string]string) {
+// 得到 notebook 的分类(包含自身)及父分类 ["Life": {}, "Life1": {}, "Life11": {}] 层级关系：Life -> Life.1 -> Life.1.1
+func (this *NotebookService) GetNotebookIdsAndTitles(notebookId, userId string) (cates []map[string]string) {
 	i := 0
 	for i < 10 { // 最多10层分类
 		notebook := notebookService.GetNotebook(notebookId, userId)
@@ -152,13 +152,15 @@ func (this *NotebookService) GetNotebooksRaw(userId, sortField string) []info.No
 		bson.M{"IsDeleted": bson.M{"$exists": false}},
 	}
 	q := db.Notebooks.Find(bson.M{"UserId": bson.ObjectIdHex(userId), "$or": orQ})
-	if sortField != "" {q = q.Sort(sortField)}
+	if sortField != "" {
+		q = q.Sort(sortField)
+	}
 	q.All(&userNotebooks)
 
 	if len(userNotebooks) == 0 {
 		return nil
 	}
-	
+
 	return userNotebooks
 }
 
@@ -176,7 +178,7 @@ func (this *NotebookService) GetNotebooks(userId string) info.SubNotebooks {
 	if len(userNotebooks) == 0 {
 		return nil
 	}
-	
+
 	return ParseAndSortNotebooks(userNotebooks, true, true)
 }
 
@@ -195,7 +197,7 @@ func (this *NotebookService) GetNotebooksByNotebookIds(notebookIds []bson.Object
 }
 
 // 更新父的ChildNotebookIds
-func (this *NotebookService) UpdateNotebookChilds (notebookId, childNotebookId, userId, method string) (bool, info.Notebook) {
+func (this *NotebookService) UpdateNotebookChilds(notebookId, childNotebookId, userId, method string) (bool, info.Notebook) {
 	notebook := this.GetNotebook(notebookId, userId)
 	if method == "Add" {
 		notebook.ChildNotebookIds = append(notebook.ChildNotebookIds, bson.ObjectIdHex(childNotebookId))
@@ -224,7 +226,6 @@ func (this *NotebookService) AddNotebook(notebook info.Notebook) (bool, info.Not
 	if len(parentNotebookId) > 0 { // 更新父的 ChildNotebookIds
 		this.UpdateNotebookChilds(parentNotebookId, notebook.NotebookId.Hex(), userId, "Add")
 	}
-	
 
 	notebook.UrlTitle = GetUrTitle(userId, notebook.Title, "notebook", notebook.NotebookId.Hex())
 	notebook.Usn = userService.IncrUsn(userId)
@@ -278,7 +279,7 @@ func (this *NotebookService) IsBlog(notebookId string) bool {
 // 判断 Notebook 中是否含有 blog 并返回包含 blog 数量
 func (this *NotebookService) HasBlog(notebookId string) int {
 	return db.Count(db.Notes, bson.M{"IsBlog": true, "IsTrash": false, "IsDeleted": false,
-			"Cates.NotebookId": bson.M{"$in": []string{notebookId} } })
+		"Cates": bson.M{"$elemMatch": bson.M{"NotebookId": notebookId}}})
 }
 
 // 判断是否是我的notebook
@@ -360,7 +361,7 @@ func (this *NotebookService) DeleteNotebook(userId, notebookId string) (bool, st
 		if db.Count(db.Notes, bson.M{"NotebookId": notebookid,
 			"UserId":    bson.ObjectIdHex(userId),
 			"IsTrash":   false,
-			"IsDeleted": false}) == 0 { // 不包含trash	
+			"IsDeleted": false}) == 0 { // 不包含trash
 			notebook := this.GetNotebook(notebookId, userId)
 			if len(notebook.ParentNotebookId.Hex()) > 0 { // 更新父的 ChildNotebookIds
 				this.UpdateNotebookChilds(notebook.ParentNotebookId.Hex(), notebookId, userId, "Delete")
@@ -414,8 +415,9 @@ func (this *NotebookService) DragNotebooks(userId string, curNotebookId string, 
 	ok := false
 
 	curNotebook := this.GetNotebook(curNotebookId, userId)
-	if len(curNotebook.ParentNotebookId.Hex()) > 0 { // 旧的父 减
-		this.UpdateNotebookChilds(curNotebook.ParentNotebookId.Hex(), curNotebookId, userId, "Delete")
+	oldParentId := curNotebook.ParentNotebookId.Hex()
+	if len(oldParentId) > 0 { // 旧的父 减
+		this.UpdateNotebookChilds(oldParentId, curNotebookId, userId, "Delete")
 	}
 
 	// 如果没parentNotebookId, 则parentNotebookId设空
@@ -437,18 +439,52 @@ func (this *NotebookService) DragNotebooks(userId string, curNotebookId string, 
 		}
 	}
 
+	// 更新notes的分类列表，curNId以及其所有的ChildNId下的所有notes都需要更新，及notebook的笔记数量
+	needUpdateNIds := this.GetChildNotebookIds(userId, curNotebookId)
+	for _, nId := range needUpdateNIds {
+		db.Notes.UpdateAll(bson.M{"NotebookId": bson.ObjectIdHex(nId), "IsTrash": false, "IsDeleted": false}, bson.M{"$set": bson.M{"Cates": this.GetNotebookIdsAndTitles(nId, userId)}})
+	}
+	this.ReCountNotebookNumberNotes(userId, curNotebookId, oldParentId)
+
 	return true
 }
 
-// 重新统计笔记本下的笔记数目
+// 得到notebook的所有子分类，包括自身
+func (this *NotebookService) GetChildNotebookIds(userId, notebookId string) []string {
+	lst := []string{notebookId}
+	curNotebook := this.GetNotebook(notebookId, userId)
+	for _, nIdO := range curNotebook.ChildNotebookIds {
+		lst = append(lst, this.GetChildNotebookIds(userId, nIdO.Hex())...)
+	}
+	return lst
+}
+
+// 重新统计笔记本下的笔记数目，父分类的也要一起重新统计
 // noteSevice: AddNote, CopyNote, CopySharedNote, MoveNote
 // trashService: DeleteNote (recove不用, 都统一在MoveNote里了)
-func (this *NotebookService) ReCountNotebookNumberNotes(notebookId string) bool {
-	notebookIdO := bson.ObjectIdHex(notebookId)
-	count := db.Count(db.Notes, bson.M{"NotebookId": notebookIdO, "IsTrash": false, "IsDeleted": false})
-	// Log(count)
-	// Log(notebookId)
-	return db.UpdateByQField(db.Notebooks, bson.M{"_id": notebookIdO}, "NumberNotes", count)
+func (this *NotebookService) ReCountNotebookNumberNotes(userId string, notebookIds ...string) bool {
+	// notebookIdO := bson.ObjectIdHex(notebookId)
+	needUpdateIdsMap := map[string]bool{} // Map 为了去除重复
+	for _, nId := range notebookIds {
+		if len(nId) == 0 {
+			continue
+		}
+
+		cates := this.GetNotebookIdsAndTitles(nId, userId) // 得到父分类列表
+		for _, i := range cates {
+			needUpdateIdsMap[i["NotebookId"]] = true
+		}
+	}
+	for nId := range needUpdateIdsMap {
+		count := db.Count(db.Notes, bson.M{"IsTrash": false, "IsDeleted": false, "Cates": bson.M{"$elemMatch": bson.M{"NotebookId": nId}}})
+		// Logf("fffffffffffffffffffffffff %v\n", count)
+		// Log(nId)
+		if ok := db.UpdateByQField(db.Notebooks, bson.M{"_id": bson.ObjectIdHex(nId)}, "NumberNotes", count); !ok {
+			return false
+		}
+	}
+	return true
+	// return db.UpdateByQField(db.Notebooks, bson.M{"_id": notebookIdO}, "NumberNotes", count)
 }
 
 func (this *NotebookService) ReCountAll() {

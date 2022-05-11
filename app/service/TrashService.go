@@ -38,7 +38,7 @@ func (this *TrashService) DeleteNote(noteId, userId string) bool {
 			// recount notebooks' notes number
 			notebookIdO := noteService.GetNotebookId(noteId)
 			notebookId := notebookIdO.Hex()
-			notebookService.ReCountNotebookNumberNotes(notebookId)
+			notebookService.ReCountNotebookNumberNotes(userId, notebookId)
 			return true
 		}
 	}
@@ -123,7 +123,7 @@ func (this *TrashService) DeleteTrashApi(noteId, userId string, usn int) (bool, 
 
 	// 一个BUG, iOS删除直接调用这个API, 结果没有重新recount
 	// recount notebooks' notes number
-	notebookService.ReCountNotebookNumberNotes(note.NotebookId.Hex())
+	notebookService.ReCountNotebookNumberNotes(userId, note.NotebookId.Hex())
 
 	return ok, "", afterUsn
 }

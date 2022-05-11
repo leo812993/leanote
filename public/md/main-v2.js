@@ -2781,6 +2781,7 @@ define('core', [
     function createAceEditor() {
         aceEditor = ace.edit("wmd-input");
         MD.aceEditor = aceEditor;
+        aceEditor.setTheme("ace/theme/chrome");
         // aceEditor.setOption("spellcheck", true);
 
         // vim
@@ -3641,7 +3642,7 @@ requirejs.config({
         underscore: '/public/libs/underscore-1.10.2.min',
         crel: '/public/libs/crel-1.1.2.min',
         //   mathjax: 'libs/MathJax/MathJax.js?a=1&config=TeX-AMS_HTML',
-        requirejs: 'bower-libs/requirejs/require',
+        // requirejs: 'bower-libs/requirejs/require',
         //   'google-code-prettify': 'bower-libs/google-code-prettify/src/prettify',
         'jquery-waitforimages': '/public/libs/jquery/jquery.waitforimages-1.4.2.min',
         'ace': '/public/libs/ace',
@@ -3706,7 +3707,7 @@ requirejs.config({
         ],
         'pagedown-ace': [
             'ace/range',
-            'ace/lib/useragent'
+            // 'ace/lib/useragent'
             //   'bower-libs/pagedown-ace/Markdown.Converter'
         ],
         'pagedown-light': [

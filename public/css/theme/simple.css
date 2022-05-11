@@ -1449,9 +1449,6 @@ textarea#wmd-input {
 #wmd-input .ace_searchbtn_close {
   margin: 0px;
 }
-#wmd-input .ace_content {
-  padding-top: 5px;
-}
 #wmd-input.ace_editor {
   color: #000000;
 }
@@ -1467,8 +1464,9 @@ textarea#wmd-input {
 #wmd-input.ace-tm .ace_cursor {
   color: #243342;
 }
+.ace_print-margin,
 #wmd-input.ace-tm .ace_print-margin {
-  background: none;
+  background: none !important;
 }
 #wmd-input.ace-tm .ace_markup.ace_heading {
   color: #000000;

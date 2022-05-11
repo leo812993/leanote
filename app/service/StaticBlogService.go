@@ -4,6 +4,7 @@ import (
 	// "github.com/leanote/leanote/app/db"
 	// "fmt"
 	// "io/ioutil"
+	"encoding/xml"
 	"time"
 
 	"github.com/leanote/leanote/app/info"
@@ -16,6 +17,18 @@ import (
 )
 
 type StaticBlogService struct{}
+
+type SiteMap struct {
+	XMLName xml.Name      `xml:"urlset"`
+	Xmlns   string        `xml:"xmlns,attr"`
+	Urls    []SiteMapItem `xml:"url"`
+}
+
+type SiteMapItem struct {
+	XMLName xml.Name `xml:"url"`
+	Loc     string   `xml:"loc"`
+	Lastod  string   `xml:"lastmod"`
+}
 
 func (this *StaticBlogService) SetBlogUrl(userInfo info.User, userBlog info.UserBlog, ViewArgs map[string]interface{}) {
 	siteUrl := configService.GetSiteUrl()
@@ -37,7 +50,7 @@ func (this *StaticBlogService) SetBlogUrl(userInfo info.User, userBlog info.User
 
 	ViewArgs["themeBaseUrl"] = "/" + userBlog.ThemePath
 
-	ViewArgs["jQueryUrl"] = "/public/libs/jquery/jquery-1.9.0.min.js"
+	ViewArgs["jQueryUrl"] = "/public/libs/jquery/jquery.min.js"
 	ViewArgs["prettifyJsUrl"] = "/public/libs/google-code-prettify/prettify.js"
 	ViewArgs["prettifyCssUrl"] = "/public/libs/google-code-prettify/prettify.css"
 	ViewArgs["blogCommonJsUrl"] = "/public/blog/js/common.js"
@@ -153,6 +166,58 @@ func (this *StaticBlogService) GenerateRSS(userInfo info.User, userBlog info.Use
 	// 	LogE("写 rss.xml 文件失败：" + e.Error())
 	// }
 	return rss
+}
+
+func (this *StaticBlogService) GenerateSiteMap(userInfo info.User, userBlog info.UserBlog) SiteMap {
+	userId := userInfo.UserId.Hex()
+
+	postURL := configService.GetSiteUrl() + "/blog/post/" + userInfo.Username
+	_, blogs := blogService.ListBlogs(userId, "", 1, 50000, "PublicTime", false) // 最多只能支持 50,000 个链接
+	SiteMapItems := make([]SiteMapItem, 0, len(blogs))
+	for _, b := range blogs {
+		SiteMapItems = append(SiteMapItems, SiteMapItem{Loc: postURL + "/" + b.UrlTitle + "/", Lastod: b.UpdatedTime.Format("2006-01-02")})
+	}
+	SiteMap := SiteMap{Xmlns: "http://www.sitemaps.org/schemas/sitemap/0.9", Urls: SiteMapItems}
+	return SiteMap
+}
+
+// 都可以识别，谷歌要在sitemap.xml后加 '/'
+func (this *StaticBlogService) GenerateSiteMapTXT(userInfo info.User, userBlog info.UserBlog) string {
+	userId := userInfo.UserId.Hex()
+
+	postURL := configService.GetSiteUrl() + "/blog/post/" + userInfo.Username
+	sitemap := `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`
+
+	_, blogs := blogService.ListBlogs(userId, "", 1, 50000, "PublicTime", false) // 最多只能支持 50,000 个链接
+	for _, b := range blogs {
+		if len(postURL+"/"+b.UrlTitle) >= 2048 { // + https:// 整体长度需要小于2048个字符
+			continue
+		}
+		sitemap += `
+  <url>
+    <loc>` + postURL + "/" + b.UrlTitle + "/" + `</loc>
+    <lastmod>` + b.UpdatedTime.Format("2006-01-02") + `</lastmod>` // <changefreq>monthly</changefreq>
+		// 	if b.IsTop {
+		// 		sitemap += `
+		// <priority>1</priority>`
+		// 	}
+		sitemap += `
+  </url>`
+	}
+
+	sitemap += `
+</urlset>`
+
+	// staticPath := "public/blog/" + userId
+	// if !mkdir(staticPath) {
+	// 	return ""
+	// }
+	// if e := ioutil.WriteFile(staticPath+"/sitemap.xml", []byte(sitemap), 0644); e != nil {
+	// 	LogE("写 sitemap.xml 文件失败：" + e.Error())
+	// }
+	return sitemap
+
 }
 
 // 未写完

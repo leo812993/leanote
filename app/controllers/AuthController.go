@@ -30,10 +30,10 @@ func (c Auth) Login(email, from string) revel.Result {
 
 	c.SetLocale()
 
-	if c.Has("demo") {
-		c.ViewArgs["demo"] = true
-		c.ViewArgs["email"] = "demo@leanote.com"
-	}
+	// if c.Has("demo") {
+	// 	c.ViewArgs["demo"] = true
+	// 	c.ViewArgs["email"] = "demo@leanote.com"
+	// }
 	return c.RenderTemplate("home/login.html")
 }
 
@@ -87,17 +87,17 @@ func (c Auth) Logout() revel.Result {
 
 // 体验一下
 func (c Auth) Demo() revel.Result {
-	email := configService.GetGlobalStringConfig("demoUsername")
-	pwd := configService.GetGlobalStringConfig("demoPassword")
+	// email := "forbidden" // configService.GetGlobalStringConfig("demoUsername")
+	// pwd := "forbidden"   // configService.GetGlobalStringConfig("demoPassword")
 
-	userInfo, err := authService.Login(email, pwd)
-	if err != nil {
-		return c.RenderJSON(info.Re{Ok: false})
-	} else {
-		c.SetSession(userInfo)
-		return c.Redirect("/note")
-	}
-	return nil
+	return c.RenderJSON(info.Re{Ok: false, Msg: "Forbidden!"})
+	// userInfo, err := authService.Login(email, pwd)
+	// if err != nil {
+	// 	return c.RenderJSON(info.Re{Ok: false})
+	// } else {
+	// 	c.SetSession(userInfo)
+	// 	return c.Redirect("/note")
+	// }
 }
 
 //--------

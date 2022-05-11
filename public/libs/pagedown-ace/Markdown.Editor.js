@@ -198,9 +198,10 @@
             }
             */
 
-            var useragent = typeof require !== 'undefined' ? require('ace/lib/useragent') : ace.require('ace/lib/useragent');
+            // var useragent = typeof require !== 'undefined' ? require('ace/lib/useragent') : ace.require('ace/lib/useragent');
             var getKey = function (identifier) {
-                var keyStroke = keyStrokes[identifier][useragent.isMac ? "mac" : "win"];
+                // var keyStroke = keyStrokes[identifier][useragent.isMac ? "mac" : "win"];
+                var keyStroke = keyStrokes[identifier][/macintosh|mac os x/i.test(navigator.userAgent) ? "mac" : "win"];
                 var orIndex = keyStroke.indexOf('|');
                 return keyStroke.substring(0, orIndex > 0 ? orIndex : keyStroke.length);
             };

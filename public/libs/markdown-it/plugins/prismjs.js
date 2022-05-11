@@ -16,7 +16,7 @@ function langAliasPreProcess(lang) {
   if (lang === "py") { return "python"; }
   if (lang === "js") { return "javascript"; }
   if (lang === "sh") { return "bash"; }
-  if (lang === "html") { return "markup"; }
+  if (lang === "html" || lang === "xml") { return "markup"; }
   if ((lang === "mma") || (lang === "mathematica")) { return "wolfram"; }
   return lang;
 }

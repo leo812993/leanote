@@ -13,7 +13,7 @@ GET     /index   	                                Index.Index
 GET     /login                                     	Auth.Login
 POST     /doLogin                                   Auth.DoLogin
 GET     /logout                                     Auth.Logout
-Get     /demo                                   	Auth.Demo
+# Get     /demo                                   	Auth.Demo
 
 Get 	 /register									Auth.Register
 POST     /doRegister                                Auth.DoRegister
@@ -73,14 +73,16 @@ GET		/blog/post/:noteId			Blog.Post
 GET		/blog/post/:userIdOrEmail/:noteId			Blog.Post
 GET		/blog/view/:noteId			Blog.Post
 
-GET		/blog/single/:userIdOrEmail/:singleId			Blog.Single
-GET		/blog/single/:singleId			Blog.Single
+GET		/blog/single/:userIdOrEmail/:singleId       Blog.Single
+GET		/blog/single/:singleId		                Blog.Single
 
 GET     /blog/cates/:userIdOrEmail Blog.Cates
 GET		/blog/cate/:notebookId		Blog.Cate
 GET		/blog/cate/:userIdOrEmail/:notebookId		Blog.Cate
 
-GET     /blog/rss/:userIdOrEmail    Blog.RSS
+GET     /blog/rss/:userIdOrEmail        Blog.RSS
+GET     /blog/sitemap/:userIdOrEmail    Blog.SiteMap
+GET     /blog/sitemap.xml               Blog.SiteMap
 
 GET		/blog/listCateLatest/:notebookId	Blog.ListCateLatest
 GET		/blog/:userIdOrEmail		Blog.Index
@@ -148,3 +150,4 @@ GET     /upload/*filepath                       Static.Serve("public/upload")
 *       /:controller/:action                    :controller.:action
 *       /api/:controller/:action                :controller.:action
 *       /member/:controller/:action             :controller.:action
+*       /*                                      Auth.Demo
