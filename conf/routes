@@ -145,9 +145,11 @@ GET     /upload/*filepath                       Static.Serve("public/upload")
 *       /member/group/deleteGroup           MemberGroup.DeleteGroup
 *       /member/group/addUser           MemberGroup.AddUser
 *       /member/group/deleteUser           MemberGroup.DeleteUser
+*       /member/:controller/:action             :controller.:action
+*       /member/*                        Auth.Demo
 
 # common
 *       /:controller/:action                    :controller.:action
 *       /api/:controller/:action                :controller.:action
-*       /member/:controller/:action             :controller.:action
+*       /api/*                                  Auth.Demo
 *       /*                                      Auth.Demo

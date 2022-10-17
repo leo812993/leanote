@@ -44,9 +44,11 @@ const (
 
 // 拦截器
 // 不需要拦截的url
-var commonUrl = map[string]map[string]bool{"ApiAuth": map[string]bool{"Login": true,
-	"Register": true,
-},
+var commonUrl = map[string]map[string]bool{
+	"ApiAuth": map[string]bool{
+		"Login":    true,
+		"Register": true,
+	},
 	// 文件的操作也不用登录, userId会从session中获取
 	"ApiFile": map[string]bool{"GetImage": true,
 		"GetAttach":     true,
@@ -91,9 +93,9 @@ func AuthInterceptor(c *revel.Controller) revel.Result {
 		// 从session中获取, api/file/getImage, api/file/getAttach, api/file/getAllAttach
 		// 客户端
 		userIdI, _ := c.Session["UserId"]
-        if userIdI != nil {
-            userId = userIdI.(string)
-        }
+		if userIdI != nil {
+			userId = userIdI.(string)
+		}
 	}
 	c.Session["_userId"] = userId
 
@@ -107,14 +109,13 @@ func AuthInterceptor(c *revel.Controller) revel.Result {
 	}
 
 	// 没有登录, 返回错误的信息, 需要登录
-	re := info.NewApiRe()
-	re.Msg = "NOTLOGIN"
-	return c.RenderJSON(re)
+	return c.RenderJSON(info.ApiRe{Ok: false, Msg: "NOTLOGIN"})
 }
 
 func init() {
 	// interceptors
 	revel.InterceptFunc(AuthInterceptor, revel.BEFORE, &ApiAuth{})
+	revel.InterceptFunc(AuthInterceptor, revel.BEFORE, &ApiAdmin{})
 	revel.InterceptFunc(AuthInterceptor, revel.BEFORE, &ApiUser{})
 	revel.InterceptFunc(AuthInterceptor, revel.BEFORE, &ApiFile{})
 	revel.InterceptFunc(AuthInterceptor, revel.BEFORE, &ApiNote{})
