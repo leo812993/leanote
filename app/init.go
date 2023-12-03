@@ -3,6 +3,14 @@ package app
 import (
 	"encoding/json"
 	"fmt"
+	"html/template"
+	"math"
+	"net/url"
+	"reflect"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/leanote/leanote/app/controllers"
 	"github.com/leanote/leanote/app/controllers/admin"
 	"github.com/leanote/leanote/app/controllers/api"
@@ -13,14 +21,8 @@ import (
 	"github.com/leanote/leanote/app/lea/i18n"
 	"github.com/leanote/leanote/app/lea/route"
 	"github.com/leanote/leanote/app/service"
+	"github.com/leanote/leanote/app/sqlite"
 	"github.com/revel/revel"
-	"html/template"
-	"math"
-	"net/url"
-	"reflect"
-	"strconv"
-	"strings"
-	"time"
 )
 
 func init() {
@@ -419,6 +421,8 @@ func init() {
 
 	// init Email
 	revel.OnAppStart(func() {
+		sqlite.InitSqlite()
+		sqlite.AddUser()
 		// 数据库
 		db.Init("", "")
 		// email配置

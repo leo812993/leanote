@@ -1,8 +1,9 @@
 package info
 
 import (
-	"gopkg.in/mgo.v2/bson"
 	"time"
+
+	"gopkg.in/mgo.v2/bson"
 )
 
 // 第三方类型
@@ -56,6 +57,52 @@ type User struct {
 	// 2015/1/15, 更新序号
 	Usn            int       `Usn`                   // UpdateSequenceNum , 全局的
 	FullSyncBefore time.Time `bson:"FullSyncBefore"` // 需要全量同步的时间, 如果 > 客户端的LastSyncTime, 则需要全量更新
+}
+
+type Users struct {
+	Id          string
+	Email       string `Email`       // 全是小写
+	Verified    bool   `Verified`    // Email是否已验证过?
+	Username    string `Username`    // 不区分大小写, 全是小写
+	UsernameRaw string `UsernameRaw` // 可能有大小写
+	Pwd         string `bson:"Pwd" json:"-"`
+	CreatedTime int64  `CreatedTime`
+
+	Logo string `Logo` // 9-24
+	// 主题
+	Theme string `Theme`
+
+	// 用户配置
+	NotebookWidth int  `NotebookWidth` // 笔记本宽度
+	NoteListWidth int  `NoteListWidth` // 笔记列表宽度
+	MdEditorWidth int  `MdEditorWidth` // markdown 左侧编辑器宽度
+	LeftIsMin     bool `LeftIsMin`     // 左侧是否是隐藏的, 默认是打开的
+
+	// 这里 第三方登录
+	ThirdUserId   string `ThirdUserId`   // 用户Id, 在第三方中唯一可识别
+	ThirdUsername string `ThirdUsername` // 第三方中username, 为了显示
+	ThirdType     int    `ThirdType`     // 第三方类型
+
+	// 用户的帐户类型
+
+	ImageNum   int `bson:"ImageNum" json:"-"`   // 图片数量
+	ImageSize  int `bson:"ImageSize" json:"-"`  // 图片大小
+	AttachNum  int `bson:"AttachNum" json:"-"`  // 附件数量
+	AttachSize int `bson:"AttachSize" json:"-"` // 附件大小
+
+	AccountType      string `bson:"AccountType" json:"-"`      // normal(为空), premium
+	AccountStartTime int64  `bson:"AccountStartTime" json:"-"` // 开始日期
+	AccountEndTime   int64  `bson:"AccountEndTime" json:"-"`   // 结束日期
+	// 阈值
+	MaxImageNums     int `bson:"MaxImageNums" json:"-"`     // 图片数量
+	MaxImageSize     int `bson:"MaxImageSize" json:"-"`     // 图片大小
+	MaxAttachNum     int `bson:"MaxAttachNum" json:"-"`     // 图片数量
+	MaxAttachSize    int `bson:"MaxAttachSize" json:"-"`    // 图片大小
+	MaxPerAttachSize int `bson:"MaxPerAttachSize" json:"-"` // 单个附件大小
+
+	// 2015/1/15, 更新序号
+	Usn            int   `Usn`                   // UpdateSequenceNum , 全局的
+	FullSyncBefore int64 `bson:"FullSyncBefore"` // 需要全量同步的时间, 如果 > 客户端的LastSyncTime, 则需要全量更新
 }
 
 type UserAccount struct {

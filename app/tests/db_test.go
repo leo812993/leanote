@@ -10,5 +10,5 @@ import (
 )
 
 func TestDBConnect(t *testing.T) {
-	db.Init("mongodb://localhost:27017/leanote", "leanote")
+	db.Init("mongodb://note:123456@192.168.0.254:27017/leanote", "leanote")
 }
